@@ -5,8 +5,44 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Plus } from "lucide-react";
+import { MapPin, Plus, Info } from "lucide-react";
 import LocationMapPicker from "@/components/LocationMapPicker";
+
+// Calculate pH and fertility based on temperature using the point scale
+const calculateSoilParameters = (temperature: number) => {
+  let pH = "";
+  let fertility = "";
+  let pointScale = 0;
+
+  if (temperature >= 20 && temperature <= 25) {
+    // Point 5: Ideal - Optimal pH, Very High Fertility
+    pointScale = 5;
+    pH = (6.5 + (temperature - 20) * 0.2).toFixed(1); // 6.5 to 7.5
+    fertility = (81 + (temperature - 20) * 3.8).toFixed(0); // 81% to 100%
+  } else if (temperature >= 26 && temperature <= 30) {
+    // Point 4: Good - Slightly Acidic, High Fertility
+    pointScale = 4;
+    pH = (5.5 + (temperature - 26) * 0.18).toFixed(1); // 5.5 to 6.4
+    fertility = (61 + (temperature - 26) * 3.8).toFixed(0); // 61% to 80%
+  } else if (temperature >= 31 && temperature <= 35) {
+    // Point 3: Warm - Moderately Acidic, Moderate Fertility
+    pointScale = 3;
+    pH = (4.5 + (temperature - 31) * 0.18).toFixed(1); // 4.5 to 5.4
+    fertility = (41 + (temperature - 31) * 3.8).toFixed(0); // 41% to 60%
+  } else if (temperature >= 36 && temperature <= 40) {
+    // Point 2: Hot - Strongly Acidic, Low Fertility
+    pointScale = 2;
+    pH = (4.0 + (temperature - 36) * 0.08).toFixed(1); // 4.0 to 4.4
+    fertility = (21 + (temperature - 36) * 3.8).toFixed(0); // 21% to 40%
+  } else {
+    // Point 1: Stressful - Extremely Acidic, Very Low Fertility
+    pointScale = 1;
+    pH = "3.5"; // Below 4.0
+    fertility = "10"; // 0% to 20%
+  }
+
+  return { pH, fertility, pointScale };
+};
 
 const DataInput = () => {
   const { toast } = useToast();
@@ -25,6 +61,27 @@ const DataInput = () => {
 
   const handleLocationSelect = (location: string, coordinates: [number, number]) => {
     setFormData({ ...formData, location, coordinates });
+  };
+
+  const handleTemperatureChange = (value: string) => {
+    const temp = parseFloat(value);
+    
+    if (!isNaN(temp) && value !== "") {
+      const { pH, fertility } = calculateSoilParameters(temp);
+      setFormData({ 
+        ...formData, 
+        temperature: value,
+        pH,
+        fertility
+      });
+      
+      toast({
+        title: "Auto-calculated",
+        description: `pH: ${pH}, Fertility: ${fertility}% (based on temperature ${temp}°C)`,
+      });
+    } else {
+      setFormData({ ...formData, temperature: value });
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -132,9 +189,27 @@ const DataInput = () => {
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg border-b pb-2">Soil Parameters</h3>
                 
+                <div className="space-y-2">
+                  <Label htmlFor="temperature" className="flex items-center gap-2">
+                    Temperature (°C) *
+                    <Info className="w-4 h-4 text-muted-foreground" />
+                  </Label>
+                  <Input
+                    id="temperature"
+                    type="number"
+                    step="0.1"
+                    placeholder="28.5"
+                    value={formData.temperature}
+                    onChange={(e) => handleTemperatureChange(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    pH and fertility will be auto-calculated based on temperature
+                  </p>
+                </div>
+
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="pH">pH Level *</Label>
+                    <Label htmlFor="pH">pH Level * (Auto-calculated)</Label>
                     <Input
                       id="pH"
                       type="number"
@@ -144,35 +219,25 @@ const DataInput = () => {
                       placeholder="6.5"
                       value={formData.pH}
                       onChange={(e) => setFormData({ ...formData, pH: e.target.value })}
+                      className="bg-muted/50"
                     />
-                    <p className="text-xs text-muted-foreground">Range: 0-14</p>
+                    <p className="text-xs text-muted-foreground">Range: 0-14 (editable)</p>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="temperature">Temperature (°C) *</Label>
+                    <Label htmlFor="fertility">Overall Fertility (%) (Auto-calculated)</Label>
                     <Input
-                      id="temperature"
+                      id="fertility"
                       type="number"
-                      step="0.1"
-                      placeholder="28.5"
-                      value={formData.temperature}
-                      onChange={(e) => setFormData({ ...formData, temperature: e.target.value })}
+                      min="0"
+                      max="100"
+                      placeholder="75"
+                      value={formData.fertility}
+                      onChange={(e) => setFormData({ ...formData, fertility: e.target.value })}
+                      className="bg-muted/50"
                     />
+                    <p className="text-xs text-muted-foreground">Range: 0-100% (editable)</p>
                   </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="fertility">Overall Fertility (%)</Label>
-                  <Input
-                    id="fertility"
-                    type="number"
-                    min="0"
-                    max="100"
-                    placeholder="75"
-                    value={formData.fertility}
-                    onChange={(e) => setFormData({ ...formData, fertility: e.target.value })}
-                  />
-                  <p className="text-xs text-muted-foreground">Range: 0-100%</p>
                 </div>
               </div>
 
@@ -228,24 +293,79 @@ const DataInput = () => {
         <div className="space-y-6">
           <Card>
             <CardHeader>
+              <CardTitle>Auto-Calculation Scale</CardTitle>
+              <CardDescription>pH and Fertility calculated based on Temperature</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="space-y-2 p-3 bg-primary/5 rounded-lg border-l-4 border-primary">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold">Point 5: Ideal</span>
+                  <span className="text-xs text-muted-foreground">20-25°C</span>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div>pH: 6.5-7.5 (Optimal)</div>
+                  <div>Fertility: 81-100% (Very High)</div>
+                </div>
+              </div>
+
+              <div className="space-y-2 p-3 bg-green-500/5 rounded-lg border-l-4 border-green-500">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold">Point 4: Good</span>
+                  <span className="text-xs text-muted-foreground">26-30°C</span>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div>pH: 5.5-6.4 (Slightly Acidic)</div>
+                  <div>Fertility: 61-80% (High)</div>
+                </div>
+              </div>
+
+              <div className="space-y-2 p-3 bg-yellow-500/5 rounded-lg border-l-4 border-yellow-500">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold">Point 3: Warm</span>
+                  <span className="text-xs text-muted-foreground">31-35°C</span>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div>pH: 4.5-5.4 (Moderately Acidic)</div>
+                  <div>Fertility: 41-60% (Moderate)</div>
+                </div>
+              </div>
+
+              <div className="space-y-2 p-3 bg-orange-500/5 rounded-lg border-l-4 border-orange-500">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold">Point 2: Hot</span>
+                  <span className="text-xs text-muted-foreground">36-40°C</span>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div>pH: 4.0-4.4 (Strongly Acidic)</div>
+                  <div>Fertility: 21-40% (Low)</div>
+                </div>
+              </div>
+
+              <div className="space-y-2 p-3 bg-red-500/5 rounded-lg border-l-4 border-red-500">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm font-semibold">Point 1: Stressful</span>
+                  <span className="text-xs text-muted-foreground">&lt;20°C or &gt;40°C</span>
+                </div>
+                <div className="text-xs text-muted-foreground space-y-1">
+                  <div>pH: &lt;4.0 (Extremely Acidic)</div>
+                  <div>Fertility: 0-20% (Very Low)</div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle>Measurement Guidelines</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div>
-                <h4 className="font-semibold mb-2">pH Testing</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Use calibrated pH meter or test strips</li>
-                  <li>• Take measurements from 6-8 inches depth</li>
-                  <li>• Average multiple readings for accuracy</li>
-                </ul>
-              </div>
-
               <div>
                 <h4 className="font-semibold mb-2">Temperature Measurement</h4>
                 <ul className="text-sm text-muted-foreground space-y-1">
                   <li>• Measure at consistent time of day</li>
                   <li>• Use soil thermometer at 4-6 inches depth</li>
                   <li>• Wait for reading to stabilize</li>
+                  <li>• pH and fertility will auto-calculate</li>
                 </ul>
               </div>
 
