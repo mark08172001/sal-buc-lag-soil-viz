@@ -6,12 +6,15 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { MapPin, Plus } from "lucide-react";
+import LocationMapPicker from "@/components/LocationMapPicker";
 
 const DataInput = () => {
   const { toast } = useToast();
+  const [mapPickerOpen, setMapPickerOpen] = useState(false);
   const [formData, setFormData] = useState({
     municipality: "",
     location: "",
+    coordinates: null as [number, number] | null,
     pH: "",
     temperature: "",
     nitrogen: "",
@@ -19,6 +22,10 @@ const DataInput = () => {
     potassium: "",
     fertility: "",
   });
+
+  const handleLocationSelect = (location: string, coordinates: [number, number]) => {
+    setFormData({ ...formData, location, coordinates });
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -42,6 +49,7 @@ const DataInput = () => {
     setFormData({
       municipality: "",
       location: "",
+      coordinates: null,
       pH: "",
       temperature: "",
       nitrogen: "",
@@ -94,12 +102,29 @@ const DataInput = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="location">Specific Location / Barangay</Label>
-                  <Input
-                    id="location"
-                    placeholder="e.g., Barangay Central"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      id="location"
+                      placeholder="e.g., Barangay Central or click map to select"
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      className="flex-1"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setMapPickerOpen(true)}
+                      title="Select location on map"
+                    >
+                      <MapPin className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  {formData.coordinates && (
+                    <p className="text-xs text-muted-foreground">
+                      Coordinates: {formData.coordinates[1].toFixed(6)}, {formData.coordinates[0].toFixed(6)}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -264,6 +289,13 @@ const DataInput = () => {
           </Card>
         </div>
       </div>
+
+      <LocationMapPicker
+        open={mapPickerOpen}
+        onOpenChange={setMapPickerOpen}
+        onLocationSelect={handleLocationSelect}
+        municipality={formData.municipality}
+      />
     </div>
   );
 };
