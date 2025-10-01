@@ -1,13 +1,13 @@
 import Navigation from "@/components/Navigation";
-import Hero from "@/components/Hero";
+import MapView from "@/components/MapView";
 
-const Index = () => {
+const MapPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <Hero />
+      <MapView />
     </div>
   );
 };
 
-export default Index;
+export default MapPage;

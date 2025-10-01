@@ -1,13 +1,13 @@
 import Navigation from "@/components/Navigation";
-import Hero from "@/components/Hero";
+import DataInput from "@/components/DataInput";
 
-const Index = () => {
+const DataEntryPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <Hero />
+      <DataInput />
     </div>
   );
 };
 
-export default Index;
+export default DataEntryPage;
