@@ -1,112 +1,238 @@
-import { useState } from "react";
+import { useEffect, useRef } from "react";
+import maplibregl from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { MapPin, Info } from "lucide-react";
+import { MapPin } from "lucide-react";
+
+// Sample soil data points for the three municipalities
+const soilDataPoints = [
+  {
+    name: "Sallapadan Central",
+    municipality: "Sallapadan",
+    coordinates: [120.95, 17.45] as [number, number],
+    pH: 6.5,
+    temperature: 28,
+    fertility: 75,
+    nitrogen: 0.25,
+    phosphorus: 0.15,
+    potassium: 0.20,
+  },
+  {
+    name: "Sallapadan North",
+    municipality: "Sallapadan",
+    coordinates: [120.96, 17.47] as [number, number],
+    pH: 6.4,
+    temperature: 27,
+    fertility: 73,
+    nitrogen: 0.23,
+    phosphorus: 0.14,
+    potassium: 0.19,
+  },
+  {
+    name: "Bucay Central",
+    municipality: "Bucay",
+    coordinates: [120.73, 17.55] as [number, number],
+    pH: 6.8,
+    temperature: 26,
+    fertility: 82,
+    nitrogen: 0.28,
+    phosphorus: 0.18,
+    potassium: 0.22,
+  },
+  {
+    name: "Bucay East",
+    municipality: "Bucay",
+    coordinates: [120.75, 17.56] as [number, number],
+    pH: 6.7,
+    temperature: 26,
+    fertility: 80,
+    nitrogen: 0.27,
+    phosphorus: 0.17,
+    potassium: 0.21,
+  },
+  {
+    name: "Lagangilang Central",
+    municipality: "Lagangilang",
+    coordinates: [120.80, 17.63] as [number, number],
+    pH: 6.3,
+    temperature: 29,
+    fertility: 70,
+    nitrogen: 0.22,
+    phosphorus: 0.14,
+    potassium: 0.18,
+  },
+  {
+    name: "Lagangilang West",
+    municipality: "Lagangilang",
+    coordinates: [120.78, 17.62] as [number, number],
+    pH: 6.4,
+    temperature: 28,
+    fertility: 72,
+    nitrogen: 0.23,
+    phosphorus: 0.15,
+    potassium: 0.19,
+  },
+];
 
 const MapView = () => {
-  const [mapboxToken, setMapboxToken] = useState("");
-  const [tokenSubmitted, setTokenSubmitted] = useState(false);
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<maplibregl.Map | null>(null);
 
-  const handleSubmitToken = () => {
-    if (mapboxToken.trim()) {
-      setTokenSubmitted(true);
-      // In a real implementation, this would initialize the Mapbox map
-    }
-  };
+  useEffect(() => {
+    if (!mapContainer.current || map.current) return;
+
+    // Initialize MapLibre map
+    map.current = new maplibregl.Map({
+      container: mapContainer.current,
+      style: "https://tiles.openfreemap.org/styles/liberty",
+      center: [120.8, 17.55], // Centered on Abra province
+      zoom: 10.5,
+    });
+
+    // Add navigation controls
+    map.current.addControl(new maplibregl.NavigationControl(), "top-right");
+
+    // Add scale control
+    map.current.addControl(
+      new maplibregl.ScaleControl({
+        maxWidth: 100,
+        unit: "metric",
+      }),
+      "bottom-left"
+    );
+
+    // Wait for map to load before adding markers
+    map.current.on("load", () => {
+      // Add markers for each soil data point
+      soilDataPoints.forEach((point) => {
+        const el = document.createElement("div");
+        el.className = "custom-marker";
+        el.style.width = "30px";
+        el.style.height = "30px";
+        el.style.borderRadius = "50%";
+        el.style.cursor = "pointer";
+        el.style.border = "3px solid white";
+        el.style.boxShadow = "0 2px 4px rgba(0,0,0,0.3)";
+
+        // Color based on pH level
+        let color = "hsl(130 45% 40%)"; // default green (optimal)
+        if (point.pH < 5.5) color = "hsl(0 70% 50%)"; // red (strongly acidic)
+        else if (point.pH < 6.0) color = "hsl(25 85% 55%)"; // orange (moderately acidic)
+        else if (point.pH < 6.5) color = "hsl(45 95% 50%)"; // yellow (slightly acidic)
+        else if (point.pH > 7.5) color = "hsl(210 80% 50%)"; // blue (alkaline)
+
+        el.style.backgroundColor = color;
+
+        // Create popup content
+        const popupContent = `
+          <div style="font-family: system-ui; padding: 8px; min-width: 200px;">
+            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: hsl(25 20% 15%);">
+              ${point.name}
+            </h3>
+            <p style="margin: 0 0 12px 0; font-size: 12px; color: hsl(25 15% 45%);">
+              ${point.municipality}
+            </p>
+            <div style="display: grid; gap: 6px; font-size: 13px;">
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: hsl(25 15% 45%);">pH Level:</span>
+                <strong style="color: hsl(25 20% 15%);">${point.pH}</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: hsl(25 15% 45%);">Temperature:</span>
+                <strong style="color: hsl(25 20% 15%);">${point.temperature}°C</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span style="color: hsl(25 15% 45%);">Fertility:</span>
+                <strong style="color: hsl(25 20% 15%);">${point.fertility}%</strong>
+              </div>
+              <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid hsl(35 20% 88%);">
+                <p style="margin: 0 0 4px 0; font-size: 11px; font-weight: 600; color: hsl(25 15% 45%);">NPK Levels:</p>
+                <div style="display: grid; gap: 3px; font-size: 12px;">
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: hsl(25 15% 45%);">N:</span>
+                    <span style="color: hsl(25 20% 15%);">${(point.nitrogen * 100).toFixed(0)}%</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: hsl(25 15% 45%);">P:</span>
+                    <span style="color: hsl(25 20% 15%);">${(point.phosphorus * 100).toFixed(0)}%</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between;">
+                    <span style="color: hsl(25 15% 45%);">K:</span>
+                    <span style="color: hsl(25 20% 15%);">${(point.potassium * 100).toFixed(0)}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        const popup = new maplibregl.Popup({ offset: 25 }).setHTML(popupContent);
+
+        new maplibregl.Marker({ element: el })
+          .setLngLat(point.coordinates)
+          .setPopup(popup)
+          .addTo(map.current!);
+      });
+    });
+
+    // Cleanup
+    return () => {
+      map.current?.remove();
+      map.current = null;
+    };
+  }, []);
 
   return (
     <div className="container mx-auto p-4 md:p-8 space-y-8">
       <div>
         <h1 className="text-4xl font-bold mb-2">Soil Health Map</h1>
-        <p className="text-muted-foreground">Interactive GIS visualization of soil data points</p>
+        <p className="text-muted-foreground">Interactive GIS visualization of soil data points across Abra municipalities</p>
       </div>
 
-      {!tokenSubmitted ? (
-        <Card className="max-w-2xl mx-auto">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-primary" />
-              Mapbox Configuration Required
-            </CardTitle>
-            <CardDescription>
-              Enter your Mapbox public token to enable interactive mapping
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Alert>
-              <Info className="h-4 w-4" />
-              <AlertDescription>
-                To get your Mapbox token, visit{" "}
-                <a
-                  href="https://account.mapbox.com/access-tokens/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="font-medium underline text-primary hover:text-primary/80"
-                >
-                  mapbox.com
-                </a>{" "}
-                and create a free account. Your public token will be available in the Tokens section.
-              </AlertDescription>
-            </Alert>
+      <Card>
+        <CardContent className="p-0">
+          <div
+            ref={mapContainer}
+            className="w-full h-[600px] rounded-lg"
+            style={{ minHeight: "600px" }}
+          />
+        </CardContent>
+      </Card>
 
-            <div className="space-y-2">
-              <Input
-                type="text"
-                placeholder="pk.eyJ1..."
-                value={mapboxToken}
-                onChange={(e) => setMapboxToken(e.target.value)}
-                className="font-mono"
-              />
-              <Button onClick={handleSubmitToken} className="w-full">
-                Initialize Map
-              </Button>
-            </div>
-
-            <div className="pt-4 border-t">
-              <h4 className="font-semibold mb-2">What you'll see on the map:</h4>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="flex items-start gap-2">
-                  <span className="text-primary">•</span>
-                  <span>Interactive markers for soil sampling locations in Sallapadan, Bucay, and Lagangilang</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary">•</span>
-                  <span>Heatmap overlay showing pH distribution and soil fertility</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary">•</span>
-                  <span>Click on markers to view detailed soil health metrics</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-primary">•</span>
-                  <span>Toggle between different visualization layers (pH, temperature, fertility)</span>
-                </li>
-              </ul>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="p-0">
-            <div className="relative w-full h-[600px] bg-muted rounded-lg flex items-center justify-center">
-              <div className="text-center space-y-4 p-8">
-                <MapPin className="w-16 h-16 text-primary mx-auto" />
-                <div>
-                  <h3 className="text-xl font-semibold mb-2">Map Initialization</h3>
-                  <p className="text-muted-foreground">
-                    The interactive map with Mapbox will be integrated here.
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    This will display soil data points for all three municipalities with interactive features.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Instructions */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <MapPin className="w-5 h-5 text-primary" />
+            How to Use the Map
+          </CardTitle>
+          <CardDescription>Interactive features and controls</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ul className="space-y-2 text-sm text-muted-foreground">
+            <li className="flex items-start gap-2">
+              <span className="text-primary">•</span>
+              <span>Click on colored markers to view detailed soil health data for that location</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary">•</span>
+              <span>Use mouse wheel or pinch to zoom in/out</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary">•</span>
+              <span>Click and drag to pan across the map</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary">•</span>
+              <span>Use navigation controls (top-right) for zoom and compass orientation</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-primary">•</span>
+              <span>Marker colors indicate pH levels: Green (optimal), Yellow (slightly acidic), Orange/Red (acidic), Blue (alkaline)</span>
+            </li>
+          </ul>
+        </CardContent>
+      </Card>
 
       {/* Legend */}
       <div className="grid md:grid-cols-3 gap-6">
