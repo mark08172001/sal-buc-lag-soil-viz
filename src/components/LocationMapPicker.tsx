@@ -32,77 +32,130 @@ const LocationMapPicker = ({ open, onOpenChange, onLocationSelect, municipality 
   useEffect(() => {
     if (!open || !mapContainer.current) return;
 
-    // Initialize map if not already initialized
-    if (!map.current) {
-      const center: [number, number] = municipality ? municipalityCoords[municipality] || [120.8, 17.55] : [120.8, 17.55];
-      
-      map.current = new maplibregl.Map({
-        container: mapContainer.current,
-        style: "https://tiles.openfreemap.org/styles/liberty",
-        center: center,
-        zoom: 12,
-      });
+    // Small delay to ensure container has dimensions
+    const initializeMap = () => {
+      if (!mapContainer.current) return;
 
-      map.current.addControl(new maplibregl.NavigationControl(), "top-right");
-
-      // Add click handler
-      map.current.on("click", async (e) => {
-        const { lng, lat } = e.lngLat;
-        const coords: [number, number] = [lng, lat];
-        setSelectedCoords(coords);
-
-        // Remove existing marker
-        if (marker.current) {
-          marker.current.remove();
-        }
-
-        // Add new marker
-        marker.current = new maplibregl.Marker({ color: "#8B4513" })
-          .setLngLat(coords)
-          .addTo(map.current!);
-
-        // Reverse geocode to get location name
-        setIsGeocoding(true);
+      // Initialize map if not already initialized
+      if (!map.current) {
+        const center: [number, number] = municipality ? municipalityCoords[municipality] || [120.8, 17.55] : [120.8, 17.55];
+        
         try {
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
-          );
-          const data = await response.json();
-          
-          // Extract location name (prefer village/suburb/town/city)
-          const location = 
-            data.address?.village || 
-            data.address?.suburb || 
-            data.address?.town || 
-            data.address?.city || 
-            data.address?.municipality ||
-            data.display_name?.split(",")[0] ||
-            `Location at ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-          
-          setLocationName(location);
+          map.current = new maplibregl.Map({
+            container: mapContainer.current,
+            style: {
+              version: 8,
+              sources: {
+                'openfreemap': {
+                  type: 'raster',
+                  tiles: [
+                    'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                    'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                  ],
+                  tileSize: 256,
+                  attribution: '© OpenStreetMap contributors'
+                }
+              },
+              layers: [
+                {
+                  id: 'openfreemap',
+                  type: 'raster',
+                  source: 'openfreemap',
+                  minzoom: 0,
+                  maxzoom: 19
+                }
+              ]
+            },
+            center: center,
+            zoom: 12,
+          });
+
+          map.current.addControl(new maplibregl.NavigationControl(), "top-right");
+
+          // Add click handler
+          map.current.on("click", async (e) => {
+            const { lng, lat } = e.lngLat;
+            const coords: [number, number] = [lng, lat];
+            setSelectedCoords(coords);
+
+            // Remove existing marker
+            if (marker.current) {
+              marker.current.remove();
+            }
+
+            // Add new marker
+            marker.current = new maplibregl.Marker({ color: "#22c55e" })
+              .setLngLat(coords)
+              .addTo(map.current!);
+
+            // Reverse geocode to get location name
+            setIsGeocoding(true);
+            try {
+              const response = await fetch(
+                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
+              );
+              const data = await response.json();
+              
+              // Extract location name (prefer village/suburb/town/city)
+              const location = 
+                data.address?.village || 
+                data.address?.suburb || 
+                data.address?.town || 
+                data.address?.city || 
+                data.address?.municipality ||
+                data.display_name?.split(",")[0] ||
+                `Location at ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+              
+              setLocationName(location);
+            } catch (error) {
+              console.error("Geocoding error:", error);
+              setLocationName(`Location at ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+              toast({
+                title: "Geocoding Error",
+                description: "Could not fetch location name, using coordinates instead",
+                variant: "destructive",
+              });
+            } finally {
+              setIsGeocoding(false);
+            }
+          });
+
+          map.current.on('load', () => {
+            console.log('Map loaded successfully');
+          });
+
+          map.current.on('error', (e) => {
+            console.error('Map error:', e);
+            toast({
+              title: "Map Error",
+              description: "There was an issue loading the map. Please try again.",
+              variant: "destructive",
+            });
+          });
         } catch (error) {
-          console.error("Geocoding error:", error);
-          setLocationName(`Location at ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+          console.error("Map initialization error:", error);
           toast({
-            title: "Geocoding Error",
-            description: "Could not fetch location name, using coordinates instead",
+            title: "Initialization Error",
+            description: "Could not initialize map. Please refresh and try again.",
             variant: "destructive",
           });
-        } finally {
-          setIsGeocoding(false);
         }
-      });
-    } else {
-      // Reset map center based on municipality
-      const center: [number, number] = municipality ? municipalityCoords[municipality] || [120.8, 17.55] : [120.8, 17.55];
-      map.current.setCenter(center);
-      map.current.setZoom(12);
-    }
+      } else {
+        // Reset map center based on municipality
+        const center: [number, number] = municipality ? municipalityCoords[municipality] || [120.8, 17.55] : [120.8, 17.55];
+        map.current.setCenter(center);
+        map.current.setZoom(12);
+      }
+    };
+
+    // Delay initialization to ensure DOM is ready
+    const timeoutId = setTimeout(initializeMap, 100);
 
     return () => {
-      // Don't remove map on unmount, just hide it
+      clearTimeout(timeoutId);
     };
-  }, [open, municipality]);
+  }, [open, municipality, toast]);
 
   const handleConfirm = () => {
     if (selectedCoords && locationName) {
@@ -142,10 +195,10 @@ const LocationMapPicker = ({ open, onOpenChange, onLocationSelect, municipality 
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex-1 relative">
+        <div className="flex-1 relative min-h-[500px]">
           <div
             ref={mapContainer}
-            className="w-full h-full rounded-lg border"
+            className="w-full h-full rounded-lg border min-h-[500px]"
           />
           
           {isGeocoding && (
