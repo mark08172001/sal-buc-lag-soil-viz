@@ -224,14 +224,17 @@ const DataInput = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="location">Specific Location / Barangay</Label>
+                  <Label htmlFor="location">Specific Location / Barangay *</Label>
                   <div className="flex gap-2">
                     <Input
                       id="location"
-                      placeholder="e.g., Barangay Central or click map to select"
+                      placeholder="Click here to select location on map"
                       value={formData.location}
                       onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      className="flex-1"
+                      onClick={() => setMapPickerOpen(true)}
+                      onFocus={() => setMapPickerOpen(true)}
+                      readOnly
+                      className="flex-1 cursor-pointer"
                     />
                     <Button
                       type="button"
@@ -249,7 +252,7 @@ const DataInput = () => {
                     </p>
                   ) : (
                     <p className="text-xs text-destructive">
-                      * Click the map pin button to select coordinates (required)
+                      * Click the input field to open map and select location
                     </p>
                   )}
                 </div>
