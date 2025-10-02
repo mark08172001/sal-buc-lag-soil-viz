@@ -14,7 +14,60 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      soil_data: {
+        Row: {
+          created_at: string
+          id: string
+          latitude: number
+          longitude: number
+          municipality: string
+          nitrogen_level: number | null
+          overall_fertility: number
+          ph_level: number
+          phosphorus_level: number | null
+          point_scale: number
+          potassium_level: number | null
+          specific_location: string
+          temperature: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          municipality: string
+          nitrogen_level?: number | null
+          overall_fertility: number
+          ph_level: number
+          phosphorus_level?: number | null
+          point_scale: number
+          potassium_level?: number | null
+          specific_location: string
+          temperature: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          municipality?: string
+          nitrogen_level?: number | null
+          overall_fertility?: number
+          ph_level?: number
+          phosphorus_level?: number | null
+          point_scale?: number
+          potassium_level?: number | null
+          specific_location?: string
+          temperature?: number
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

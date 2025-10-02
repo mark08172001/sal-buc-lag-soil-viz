@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { MapPin, Plus, Info } from "lucide-react";
+import { MapPin, Plus, Info, Loader2 } from "lucide-react";
 import LocationMapPicker from "@/components/LocationMapPicker";
 
 // Calculate pH and fertility based on temperature using the point scale
@@ -46,7 +48,10 @@ const calculateSoilParameters = (temperature: number) => {
 
 const DataInput = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
   const [mapPickerOpen, setMapPickerOpen] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     municipality: "",
     location: "",
@@ -58,6 +63,28 @@ const DataInput = () => {
     potassium: "",
     fertility: "",
   });
+
+  useEffect(() => {
+    // Check authentication status
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        navigate("/auth");
+      } else {
+        setUserId(session.user.id);
+      }
+    });
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT" || !session) {
+        navigate("/auth");
+      } else {
+        setUserId(session.user.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const handleLocationSelect = (location: string, coordinates: [number, number]) => {
     setFormData({ ...formData, location, coordinates });
@@ -84,36 +111,75 @@ const DataInput = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate form
-    if (!formData.municipality || !formData.pH || !formData.temperature) {
+    if (!formData.municipality || !formData.pH || !formData.temperature || !formData.coordinates) {
       toast({
         title: "Validation Error",
-        description: "Please fill in all required fields",
+        description: "Please fill in all required fields including location coordinates",
         variant: "destructive",
       });
       return;
     }
 
-    toast({
-      title: "Data Submitted Successfully",
-      description: `Soil data for ${formData.municipality} has been recorded.`,
+    if (!userId) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to submit data",
+        variant: "destructive",
+      });
+      navigate("/auth");
+      return;
+    }
+
+    setLoading(true);
+
+    const { pointScale } = calculateSoilParameters(parseFloat(formData.temperature));
+    
+    const { error } = await supabase.from("soil_data").insert({
+      user_id: userId,
+      municipality: formData.municipality,
+      specific_location: formData.location || "Not specified",
+      latitude: formData.coordinates[1],
+      longitude: formData.coordinates[0],
+      temperature: parseFloat(formData.temperature),
+      ph_level: parseFloat(formData.pH),
+      overall_fertility: parseFloat(formData.fertility),
+      point_scale: pointScale,
+      nitrogen_level: formData.nitrogen ? parseFloat(formData.nitrogen) : null,
+      phosphorus_level: formData.phosphorus ? parseFloat(formData.phosphorus) : null,
+      potassium_level: formData.potassium ? parseFloat(formData.potassium) : null,
     });
 
-    // Reset form
-    setFormData({
-      municipality: "",
-      location: "",
-      coordinates: null,
-      pH: "",
-      temperature: "",
-      nitrogen: "",
-      phosphorus: "",
-      potassium: "",
-      fertility: "",
-    });
+    setLoading(false);
+
+    if (error) {
+      toast({
+        title: "Submission Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Data Submitted Successfully",
+        description: `Soil data for ${formData.municipality} has been recorded.`,
+      });
+
+      // Reset form
+      setFormData({
+        municipality: "",
+        location: "",
+        coordinates: null,
+        pH: "",
+        temperature: "",
+        nitrogen: "",
+        phosphorus: "",
+        potassium: "",
+        fertility: "",
+      });
+    }
   };
 
   return (
@@ -282,7 +348,8 @@ const DataInput = () => {
                 </div>
               </div>
 
-              <Button type="submit" className="w-full" size="lg">
+              <Button type="submit" className="w-full" size="lg" disabled={loading}>
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Submit Soil Data
               </Button>
             </form>

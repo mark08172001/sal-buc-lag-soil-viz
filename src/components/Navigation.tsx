@@ -1,11 +1,48 @@
-import { Link, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Leaf, BarChart3, Map, Plus, Home } from "lucide-react";
+import { Leaf, BarChart3, Map, Plus, Home, LogOut, LogIn } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Navigation = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   const isActive = (path: string) => location.pathname === path;
+
+  useEffect(() => {
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setIsAuthenticated(!!session);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsAuthenticated(!!session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
+    } else {
+      toast({
+        title: "Logged out",
+        description: "You have been logged out successfully",
+      });
+      navigate("/");
+    }
+  };
   
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -61,6 +98,29 @@ const Navigation = () => {
               <span className="hidden sm:inline">Add Data</span>
             </Button>
           </Link>
+
+          {isAuthenticated ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="gap-2"
+              onClick={handleLogout}
+            >
+              <LogOut className="w-4 h-4" />
+              <span className="hidden sm:inline">Logout</span>
+            </Button>
+          ) : (
+            <Link to="/auth">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+              >
+                <LogIn className="w-4 h-4" />
+                <span className="hidden sm:inline">Login</span>
+              </Button>
+            </Link>
+          )}
         </div>
       </div>
     </nav>
