@@ -32,128 +32,135 @@ const LocationMapPicker = ({ open, onOpenChange, onLocationSelect, municipality 
   useEffect(() => {
     if (!open || !mapContainer.current) return;
 
-    // Small delay to ensure container has dimensions
-    const initializeMap = () => {
-      if (!mapContainer.current) return;
+    // Clean up previous map instance if it exists
+    if (map.current) {
+      map.current.remove();
+      map.current = null;
+    }
+    
+    if (marker.current) {
+      marker.current.remove();
+      marker.current = null;
+    }
 
-      // Initialize map if not already initialized
-      if (!map.current) {
-        const center: [number, number] = municipality ? municipalityCoords[municipality] || [120.8, 17.55] : [120.8, 17.55];
-        
-        try {
-          map.current = new maplibregl.Map({
-            container: mapContainer.current,
-            style: {
-              version: 8,
-              sources: {
-                'openfreemap': {
-                  type: 'raster',
-                  tiles: [
-                    'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
-                    'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
-                  ],
-                  tileSize: 256,
-                  attribution: '© OpenStreetMap contributors'
-                }
-              },
-              layers: [
-                {
-                  id: 'openfreemap',
-                  type: 'raster',
-                  source: 'openfreemap',
-                  minzoom: 0,
-                  maxzoom: 19
-                }
-              ]
+    const center: [number, number] = municipality ? municipalityCoords[municipality] || [120.8, 17.55] : [120.8, 17.55];
+    
+    // Initialize map after a delay to ensure dialog is fully rendered
+    const timeoutId = setTimeout(() => {
+      if (!mapContainer.current) {
+        console.error('Map container not found');
+        return;
+      }
+
+      console.log('Initializing map with center:', center);
+
+      try {
+        map.current = new maplibregl.Map({
+          container: mapContainer.current,
+          style: {
+            version: 8,
+            sources: {
+              'osm': {
+                type: 'raster',
+                tiles: [
+                  'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  'https://b.tile.openstreetmap.org/{z}/{x}/{y}.png',
+                  'https://c.tile.openstreetmap.org/{z}/{x}/{y}.png'
+                ],
+                tileSize: 256,
+                attribution: '© OpenStreetMap contributors'
+              }
             },
-            center: center,
-            zoom: 12,
-          });
+            layers: [
+              {
+                id: 'osm-tiles',
+                type: 'raster',
+                source: 'osm',
+                minzoom: 0,
+                maxzoom: 19
+              }
+            ]
+          },
+          center: center,
+          zoom: 12,
+        });
 
-          map.current.addControl(new maplibregl.NavigationControl(), "top-right");
+        map.current.addControl(new maplibregl.NavigationControl(), "top-right");
 
-          // Add click handler
-          map.current.on("click", async (e) => {
-            const { lng, lat } = e.lngLat;
-            const coords: [number, number] = [lng, lat];
-            setSelectedCoords(coords);
+        map.current.on('load', () => {
+          console.log('Map loaded successfully');
+        });
 
-            // Remove existing marker
-            if (marker.current) {
-              marker.current.remove();
-            }
-
-            // Add new marker
-            marker.current = new maplibregl.Marker({ color: "#22c55e" })
-              .setLngLat(coords)
-              .addTo(map.current!);
-
-            // Reverse geocode to get location name
-            setIsGeocoding(true);
-            try {
-              const response = await fetch(
-                `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
-              );
-              const data = await response.json();
-              
-              // Extract location name (prefer village/suburb/town/city)
-              const location = 
-                data.address?.village || 
-                data.address?.suburb || 
-                data.address?.town || 
-                data.address?.city || 
-                data.address?.municipality ||
-                data.display_name?.split(",")[0] ||
-                `Location at ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
-              
-              setLocationName(location);
-            } catch (error) {
-              console.error("Geocoding error:", error);
-              setLocationName(`Location at ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
-              toast({
-                title: "Geocoding Error",
-                description: "Could not fetch location name, using coordinates instead",
-                variant: "destructive",
-              });
-            } finally {
-              setIsGeocoding(false);
-            }
-          });
-
-          map.current.on('load', () => {
-            console.log('Map loaded successfully');
-          });
-
-          map.current.on('error', (e) => {
-            console.error('Map error:', e);
-            toast({
-              title: "Map Error",
-              description: "There was an issue loading the map. Please try again.",
-              variant: "destructive",
-            });
-          });
-        } catch (error) {
-          console.error("Map initialization error:", error);
+        map.current.on('error', (e) => {
+          console.error('Map error:', e);
           toast({
-            title: "Initialization Error",
-            description: "Could not initialize map. Please refresh and try again.",
+            title: "Map Error",
+            description: "There was an issue loading the map tiles.",
             variant: "destructive",
           });
-        }
-      } else {
-        // Reset map center based on municipality
-        const center: [number, number] = municipality ? municipalityCoords[municipality] || [120.8, 17.55] : [120.8, 17.55];
-        map.current.setCenter(center);
-        map.current.setZoom(12);
-      }
-    };
+        });
 
-    // Delay initialization to ensure DOM is ready
-    const timeoutId = setTimeout(initializeMap, 100);
+        // Add click handler
+        map.current.on("click", async (e) => {
+          const { lng, lat } = e.lngLat;
+          const coords: [number, number] = [lng, lat];
+          setSelectedCoords(coords);
+
+          // Remove existing marker
+          if (marker.current) {
+            marker.current.remove();
+          }
+
+          // Add new marker
+          marker.current = new maplibregl.Marker({ color: "#22c55e" })
+            .setLngLat(coords)
+            .addTo(map.current!);
+
+          // Reverse geocode to get location name
+          setIsGeocoding(true);
+          try {
+            const response = await fetch(
+              `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1`
+            );
+            const data = await response.json();
+            
+            const location = 
+              data.address?.village || 
+              data.address?.suburb || 
+              data.address?.town || 
+              data.address?.city || 
+              data.address?.municipality ||
+              data.display_name?.split(",")[0] ||
+              `Location at ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+            
+            setLocationName(location);
+          } catch (error) {
+            console.error("Geocoding error:", error);
+            setLocationName(`Location at ${lat.toFixed(4)}, ${lng.toFixed(4)}`);
+          } finally {
+            setIsGeocoding(false);
+          }
+        });
+      } catch (error) {
+        console.error("Map initialization error:", error);
+        toast({
+          title: "Initialization Error",
+          description: "Could not initialize map. Please try again.",
+          variant: "destructive",
+        });
+      }
+    }, 300);
 
     return () => {
       clearTimeout(timeoutId);
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+      if (marker.current) {
+        marker.current.remove();
+        marker.current = null;
+      }
     };
   }, [open, municipality, toast]);
 
