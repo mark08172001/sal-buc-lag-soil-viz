@@ -235,17 +235,21 @@ const DataInput = () => {
                     />
                     <Button
                       type="button"
-                      variant="outline"
+                      variant={formData.coordinates ? "outline" : "default"}
                       size="icon"
                       onClick={() => setMapPickerOpen(true)}
-                      title="Select location on map"
+                      title="Select location on map (Required)"
                     >
                       <MapPin className="w-4 h-4" />
                     </Button>
                   </div>
-                  {formData.coordinates && (
-                    <p className="text-xs text-muted-foreground">
-                      Coordinates: {formData.coordinates[1].toFixed(6)}, {formData.coordinates[0].toFixed(6)}
+                  {formData.coordinates ? (
+                    <p className="text-xs text-green-600 dark:text-green-400">
+                      ✓ Coordinates: {formData.coordinates[1].toFixed(6)}, {formData.coordinates[0].toFixed(6)}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-destructive">
+                      * Click the map pin button to select coordinates (required)
                     </p>
                   )}
                 </div>
