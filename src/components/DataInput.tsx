@@ -228,22 +228,19 @@ const DataInput = () => {
                   <div className="flex gap-2">
                     <Input
                       id="location"
-                      placeholder="Click here to select location on map"
+                      placeholder="Location will be set after map selection"
                       value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                      onClick={() => setMapPickerOpen(true)}
-                      onFocus={() => setMapPickerOpen(true)}
                       readOnly
-                      className="flex-1 cursor-pointer"
+                      className="flex-1 bg-muted/50"
                     />
                     <Button
                       type="button"
                       variant={formData.coordinates ? "outline" : "default"}
-                      size="icon"
                       onClick={() => setMapPickerOpen(true)}
-                      title="Select location on map (Required)"
+                      className="gap-2"
                     >
                       <MapPin className="w-4 h-4" />
+                      Load Map
                     </Button>
                   </div>
                   {formData.coordinates ? (
@@ -252,7 +249,7 @@ const DataInput = () => {
                     </p>
                   ) : (
                     <p className="text-xs text-destructive">
-                      * Click the input field to open map and select location
+                      * Click "Load Map" button to open map and select specific location
                     </p>
                   )}
                 </div>
