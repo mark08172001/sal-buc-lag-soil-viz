@@ -30,9 +30,9 @@ const LocationMapPicker = ({ open, onOpenChange, onLocationSelect, municipality 
   };
 
   useEffect(() => {
-    if (!open || !mapContainer.current) return;
+    if (!open) return;
 
-    // Clean up previous map instance if it exists
+    // Clean up previous map instance
     if (map.current) {
       map.current.remove();
       map.current = null;
@@ -45,16 +45,30 @@ const LocationMapPicker = ({ open, onOpenChange, onLocationSelect, municipality 
 
     const center: [number, number] = municipality ? municipalityCoords[municipality] || [120.8, 17.55] : [120.8, 17.55];
     
-    // Initialize map after a delay to ensure dialog is fully rendered
+    // Wait for dialog animation and DOM to be ready
     const timeoutId = setTimeout(() => {
       if (!mapContainer.current) {
-        console.error('Map container not found');
+        console.error('Map container not available');
         return;
       }
 
-      console.log('Initializing map with center:', center);
+      // Check if container has dimensions
+      const rect = mapContainer.current.getBoundingClientRect();
+      console.log('Container dimensions:', rect.width, 'x', rect.height);
+
+      if (rect.width === 0 || rect.height === 0) {
+        console.error('Container has zero dimensions');
+        toast({
+          title: "Map Loading Error",
+          description: "Map container not ready. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       try {
+        console.log('Creating map with center:', center);
+        
         map.current = new maplibregl.Map({
           container: mapContainer.current,
           style: {
@@ -89,15 +103,17 @@ const LocationMapPicker = ({ open, onOpenChange, onLocationSelect, municipality 
 
         map.current.on('load', () => {
           console.log('Map loaded successfully');
+          // Force resize after load
+          setTimeout(() => {
+            if (map.current) {
+              map.current.resize();
+              console.log('Map resized');
+            }
+          }, 100);
         });
 
         map.current.on('error', (e) => {
           console.error('Map error:', e);
-          toast({
-            title: "Map Error",
-            description: "There was an issue loading the map tiles.",
-            variant: "destructive",
-          });
         });
 
         // Add click handler
@@ -106,17 +122,14 @@ const LocationMapPicker = ({ open, onOpenChange, onLocationSelect, municipality 
           const coords: [number, number] = [lng, lat];
           setSelectedCoords(coords);
 
-          // Remove existing marker
           if (marker.current) {
             marker.current.remove();
           }
 
-          // Add new marker
           marker.current = new maplibregl.Marker({ color: "#22c55e" })
             .setLngLat(coords)
             .addTo(map.current!);
 
-          // Reverse geocode to get location name
           setIsGeocoding(true);
           try {
             const response = await fetch(
@@ -144,12 +157,12 @@ const LocationMapPicker = ({ open, onOpenChange, onLocationSelect, municipality 
       } catch (error) {
         console.error("Map initialization error:", error);
         toast({
-          title: "Initialization Error",
-          description: "Could not initialize map. Please try again.",
+          title: "Map Error",
+          description: "Failed to initialize map. Please try again.",
           variant: "destructive",
         });
       }
-    }, 300);
+    }, 500);
 
     return () => {
       clearTimeout(timeoutId);
@@ -202,10 +215,11 @@ const LocationMapPicker = ({ open, onOpenChange, onLocationSelect, municipality 
           </DialogDescription>
         </DialogHeader>
         
-        <div className="flex-1 relative min-h-[500px]">
+        <div className="flex-1 relative" style={{ minHeight: '500px' }}>
           <div
             ref={mapContainer}
-            className="w-full h-full rounded-lg border min-h-[500px]"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+            className="rounded-lg border"
           />
           
           {isGeocoding && (
