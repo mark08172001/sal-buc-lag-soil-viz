@@ -117,7 +117,7 @@ const AuthPage = () => {
             variant="ghost"
             size="sm"
             onClick={() => navigate("/")}
-            className="absolute top-4 left-4"
+            className="absolute top-4 right-4"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back
