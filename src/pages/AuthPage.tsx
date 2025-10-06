@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -105,6 +105,15 @@ const AuthPage = () => {
     <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate("/")}
+            className="absolute top-4 left-4"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
           <CardTitle className="text-3xl">Soil Health Monitoring</CardTitle>
           <CardDescription>Sign in to contribute soil data</CardDescription>
         </CardHeader>
