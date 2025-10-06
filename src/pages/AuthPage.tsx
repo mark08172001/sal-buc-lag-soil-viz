@@ -111,17 +111,20 @@ const AuthPage = () => {
       />
       {/* Overlay for readability */}
       <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+      
+      {/* Back button at top left */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => navigate("/")}
+        className="absolute top-4 left-4 z-20"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back
+      </Button>
+
       <Card className="w-full max-w-md relative z-10">
         <CardHeader className="text-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/")}
-            className="absolute top-4 right-4"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
           <CardTitle className="text-3xl">Soil Health Monitoring</CardTitle>
           <CardDescription>Sign in to contribute soil data</CardDescription>
         </CardHeader>
