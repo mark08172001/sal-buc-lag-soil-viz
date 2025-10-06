@@ -207,7 +207,7 @@ const DataInput = () => {
                 <h3 className="font-semibold text-lg border-b pb-2">Location Information</h3>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="municipality">Municipality *</Label>
+                  <Label htmlFor="municipality">Municipality <span className="text-destructive">*</span></Label>
                   <Select
                     value={formData.municipality}
                     onValueChange={(value) => setFormData({ ...formData, municipality: value })}
@@ -224,7 +224,7 @@ const DataInput = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="location">Specific Location / Barangay *</Label>
+                  <Label htmlFor="location">Specific Location / Barangay <span className="text-destructive">*</span></Label>
                   <div className="flex gap-2">
                     <Input
                       id="location"
@@ -249,7 +249,7 @@ const DataInput = () => {
                     </p>
                   ) : (
                     <p className="text-xs text-destructive">
-                      * Click "Load Map" button to open map and select specific location
+                      <span className="text-destructive">*</span> Click "Load Map" button to open map and select specific location
                     </p>
                   )}
                 </div>
@@ -261,7 +261,7 @@ const DataInput = () => {
                 
                 <div className="space-y-2">
                   <Label htmlFor="temperature" className="flex items-center gap-2">
-                    Temperature (°C) *
+                    Temperature (°C) <span className="text-destructive">*</span>
                     <Info className="w-4 h-4 text-muted-foreground" />
                   </Label>
                   <Input
@@ -279,7 +279,7 @@ const DataInput = () => {
 
                 <div className="grid md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="pH">pH Level * (Auto-calculated)</Label>
+                    <Label htmlFor="pH">pH Level <span className="text-destructive">*</span> (Auto-calculated)</Label>
                     <Input
                       id="pH"
                       type="number"
