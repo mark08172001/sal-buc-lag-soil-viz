@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, ArrowLeft } from "lucide-react";
+import riceFieldsBg from "@/assets/rice-fields-bg.jpg";
 
 const AuthPage = () => {
   const navigate = useNavigate();
@@ -102,8 +103,15 @@ const AuthPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted">
-      <Card className="w-full max-w-md">
+    <div className="relative min-h-screen flex items-center justify-center p-4">
+      {/* Background image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${riceFieldsBg})` }}
+      />
+      {/* Overlay for readability */}
+      <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" />
+      <Card className="w-full max-w-md relative z-10">
         <CardHeader className="text-center">
           <Button
             variant="ghost"

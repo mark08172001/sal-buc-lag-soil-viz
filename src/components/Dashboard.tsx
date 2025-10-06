@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
 import { Thermometer, Droplets, TrendingUp, MapPin } from "lucide-react";
+import riceFieldsBg from "@/assets/rice-fields-bg.jpg";
 
 // Sample data for demonstration
 const soilDataByMunicipality = [
@@ -25,7 +26,16 @@ const Dashboard = () => {
   const avgFertility = (soilDataByMunicipality.reduce((acc, item) => acc + item.fertility, 0) / soilDataByMunicipality.length).toFixed(1);
 
   return (
-    <div className="container mx-auto p-4 md:p-8 space-y-8">
+    <div className="relative min-h-screen">
+      {/* Background image */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
+        style={{ backgroundImage: `url(${riceFieldsBg})` }}
+      />
+      {/* Overlay for content readability */}
+      <div className="fixed inset-0 bg-background/85 backdrop-blur-sm -z-10" />
+      
+      <div className="container mx-auto p-4 md:p-8 space-y-8 relative z-10">
       <div>
         <h1 className="text-4xl font-bold mb-2">Soil Health Dashboard</h1>
         <p className="text-muted-foreground">Monitoring soil conditions across three municipalities</p>
@@ -253,6 +263,7 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         ))}
+      </div>
       </div>
     </div>
   );

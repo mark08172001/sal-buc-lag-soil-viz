@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { MapPin } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import riceFieldsBg from "@/assets/rice-fields-bg.jpg";
 
 interface SoilDataPoint {
   id: string;
@@ -164,7 +165,16 @@ const MapView = () => {
   }, [soilData, isLoading]);
 
   return (
-    <div className="container mx-auto p-4 md:p-8 space-y-8">
+    <div className="relative min-h-screen">
+      {/* Background image */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
+        style={{ backgroundImage: `url(${riceFieldsBg})` }}
+      />
+      {/* Overlay for content readability */}
+      <div className="fixed inset-0 bg-background/85 backdrop-blur-sm -z-10" />
+      
+      <div className="container mx-auto p-4 md:p-8 space-y-8 relative z-10">
       <div>
         <h1 className="text-4xl font-bold mb-2">Soil Health Map</h1>
         <p className="text-muted-foreground">
@@ -319,6 +329,7 @@ const MapView = () => {
             </div>
           </CardContent>
         </Card>
+      </div>
       </div>
     </div>
   );
