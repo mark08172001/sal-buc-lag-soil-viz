@@ -172,7 +172,7 @@ const MapView = () => {
         style={{ backgroundImage: `url(${soilHealthBg})` }}
       />
       {/* Overlay for content readability */}
-      <div className="fixed inset-0 bg-background/60 backdrop-blur-sm -z-10" />
+      <div className="fixed inset-0 bg-gradient-to-br from-background/60 via-background/50 to-background/40 -z-10" />
       
       <div className="container mx-auto p-4 md:p-8 space-y-8 relative z-10">
       <div>
