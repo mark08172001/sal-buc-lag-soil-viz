@@ -12,7 +12,7 @@ const Hero = () => {
         style={{ backgroundImage: `url(${soilHealthBg})` }}
       />
       {/* Overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/70 to-background/60" />
+      <div className="absolute inset-0 bg-gradient-to-br from-background/60 via-background/50 to-background/40" />
       
       {/* Content */}
       <div className="container relative z-10 px-4 py-20">

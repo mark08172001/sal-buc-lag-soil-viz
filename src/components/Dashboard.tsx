@@ -33,7 +33,7 @@ const Dashboard = () => {
         style={{ backgroundImage: `url(${soilHealthBg})` }}
       />
       {/* Overlay for content readability */}
-      <div className="fixed inset-0 bg-background/85 backdrop-blur-sm -z-10" />
+      <div className="fixed inset-0 bg-background/60 backdrop-blur-sm -z-10" />
       
       <div className="container mx-auto p-4 md:p-8 space-y-8 relative z-10">
       <div>
