@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, Legend, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar } from "recharts";
 import { Thermometer, Droplets, TrendingUp, MapPin } from "lucide-react";
-import riceFieldsBg from "@/assets/rice-fields-bg.jpg";
+import soilHealthBg from "@/assets/soil-health-bg.jpg";
 
 // Sample data for demonstration
 const soilDataByMunicipality = [
@@ -30,7 +30,7 @@ const Dashboard = () => {
       {/* Background image */}
       <div 
         className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
-        style={{ backgroundImage: `url(${riceFieldsBg})` }}
+        style={{ backgroundImage: `url(${soilHealthBg})` }}
       />
       {/* Overlay for content readability */}
       <div className="fixed inset-0 bg-background/85 backdrop-blur-sm -z-10" />

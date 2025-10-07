@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { MapPin, Plus, Info, Loader2 } from "lucide-react";
 import LocationMapPicker from "@/components/LocationMapPicker";
+import soilHealthBg from "@/assets/soil-health-bg.jpg";
 
 // Calculate pH and fertility based on temperature using the point scale
 const calculateSoilParameters = (temperature: number) => {
@@ -183,7 +184,16 @@ const DataInput = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-8 space-y-8">
+    <div className="relative min-h-screen">
+      {/* Background image */}
+      <div 
+        className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
+        style={{ backgroundImage: `url(${soilHealthBg})` }}
+      />
+      {/* Overlay for content readability */}
+      <div className="fixed inset-0 bg-background/85 backdrop-blur-sm -z-10" />
+      
+      <div className="container mx-auto p-4 md:p-8 space-y-8 relative z-10">
       <div>
         <h1 className="text-4xl font-bold mb-2">Data Entry</h1>
         <p className="text-muted-foreground">Record new soil health measurements</p>
@@ -487,6 +497,7 @@ const DataInput = () => {
         onLocationSelect={handleLocationSelect}
         municipality={formData.municipality}
       />
+      </div>
     </div>
   );
 };

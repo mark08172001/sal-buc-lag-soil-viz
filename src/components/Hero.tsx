@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Leaf, Map, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
-import heroBackground from "@/assets/hero-background.jpg";
+import soilHealthBg from "@/assets/soil-health-bg.jpg";
 
 const Hero = () => {
   return (
@@ -9,7 +9,7 @@ const Hero = () => {
       {/* Background image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroBackground})` }}
+        style={{ backgroundImage: `url(${soilHealthBg})` }}
       />
       {/* Overlay for text readability */}
       <div className="absolute inset-0 bg-gradient-to-br from-background/80 via-background/70 to-background/60" />
