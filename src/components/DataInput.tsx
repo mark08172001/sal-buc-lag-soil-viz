@@ -200,7 +200,7 @@ const DataInput = () => {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-8">
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Plus className="w-5 h-5 text-primary" />
@@ -372,7 +372,7 @@ const DataInput = () => {
 
         {/* Guidelines and Information */}
         <div className="space-y-6">
-          <Card>
+          <Card className="bg-card/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Auto-Calculation Scale</CardTitle>
               <CardDescription>pH and Fertility calculated based on Temperature</CardDescription>
@@ -435,7 +435,7 @@ const DataInput = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-card/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Measurement Guidelines</CardTitle>
             </CardHeader>
@@ -461,7 +461,7 @@ const DataInput = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card className="bg-card/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>Optimal Ranges</CardTitle>
             </CardHeader>

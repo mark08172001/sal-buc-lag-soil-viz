@@ -183,7 +183,7 @@ const MapView = () => {
         </p>
       </div>
 
-      <Card>
+      <Card className="bg-card/80 backdrop-blur-sm">
         <CardContent className="p-0">
           {isLoading ? (
             <div className="w-full h-[600px] rounded-lg flex items-center justify-center">
@@ -210,7 +210,7 @@ const MapView = () => {
       </Card>
 
       {/* Instructions */}
-      <Card>
+      <Card className="bg-card/80 backdrop-blur-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="w-5 h-5 text-primary" />
@@ -246,7 +246,7 @@ const MapView = () => {
 
       {/* Legend */}
       <div className="grid md:grid-cols-3 gap-6">
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-lg">pH Scale</CardTitle>
           </CardHeader>
@@ -274,7 +274,7 @@ const MapView = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-lg">Temperature Range</CardTitle>
           </CardHeader>
@@ -302,7 +302,7 @@ const MapView = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm">
           <CardHeader>
             <CardTitle className="text-lg">Fertility Level</CardTitle>
           </CardHeader>

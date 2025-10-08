@@ -43,7 +43,7 @@ const Dashboard = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Average pH Level</CardTitle>
             <Droplets className="h-4 w-4 text-primary" />
@@ -54,7 +54,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Average Temperature</CardTitle>
             <Thermometer className="h-4 w-4 text-primary" />
@@ -65,7 +65,7 @@ const Dashboard = () => {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="bg-card/80 backdrop-blur-sm">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Average Fertility</CardTitle>
             <TrendingUp className="h-4 w-4 text-primary" />
@@ -87,7 +87,7 @@ const Dashboard = () => {
 
         <TabsContent value="comparison" className="space-y-4">
           <div className="grid md:grid-cols-2 gap-6">
-            <Card>
+            <Card className="bg-card/80 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle>pH Levels by Municipality</CardTitle>
                 <CardDescription>Current soil pH measurements</CardDescription>
@@ -111,7 +111,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-card/80 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle>Temperature Distribution</CardTitle>
                 <CardDescription>Soil temperature across regions (°C)</CardDescription>
@@ -135,7 +135,7 @@ const Dashboard = () => {
               </CardContent>
             </Card>
 
-            <Card className="md:col-span-2">
+            <Card className="md:col-span-2 bg-card/80 backdrop-blur-sm">
               <CardHeader>
                 <CardTitle>Fertility Comparison</CardTitle>
                 <CardDescription>Soil fertility percentage by municipality</CardDescription>
@@ -162,7 +162,7 @@ const Dashboard = () => {
         </TabsContent>
 
         <TabsContent value="historical" className="space-y-4">
-          <Card>
+          <Card className="bg-card/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>6-Month Trend Analysis</CardTitle>
               <CardDescription>Historical soil health indicators</CardDescription>
@@ -191,7 +191,7 @@ const Dashboard = () => {
         </TabsContent>
 
         <TabsContent value="nutrients" className="space-y-4">
-          <Card>
+          <Card className="bg-card/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle>NPK Nutrient Profile</CardTitle>
               <CardDescription>Nitrogen, Phosphorus, and Potassium levels by municipality</CardDescription>
@@ -223,7 +223,7 @@ const Dashboard = () => {
       {/* Municipality Details */}
       <div className="grid md:grid-cols-3 gap-6">
         {soilDataByMunicipality.map((municipality) => (
-          <Card key={municipality.name} className="border-l-4 border-l-primary">
+          <Card key={municipality.name} className="border-l-4 border-l-primary bg-card/80 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MapPin className="w-5 h-5 text-primary" />
