@@ -11,8 +11,6 @@ const Hero = () => {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${soilHealthBg})` }}
       />
-      {/* Overlay for text readability */}
-      <div className="absolute inset-0 bg-gradient-to-br from-background/60 via-background/50 to-background/40" />
       
       {/* Content */}
       <div className="container relative z-10 px-4 py-20">
