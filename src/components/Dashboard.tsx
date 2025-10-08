@@ -32,6 +32,8 @@ const Dashboard = () => {
         className="fixed inset-0 bg-cover bg-center bg-no-repeat -z-10"
         style={{ backgroundImage: `url(${soilHealthBg})` }}
       />
+      {/* Overlay for content readability */}
+      <div className="fixed inset-0 bg-gradient-to-br from-background/60 via-background/50 to-background/40 -z-10" />
       
       <div className="container mx-auto p-4 md:p-8 space-y-8 relative z-10">
       <div>
