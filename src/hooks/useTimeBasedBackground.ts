@@ -4,7 +4,18 @@ import afternoonBg from "@/assets/soil-health-bg.jpg";
 import eveningBg from "@/assets/evening-farm.jpg";
 
 export const useTimeBasedBackground = () => {
-  const [backgroundImage, setBackgroundImage] = useState(morningBg);
+  const getInitialBackground = () => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      return morningBg;
+    } else if (hour >= 12 && hour < 18) {
+      return afternoonBg;
+    } else {
+      return eveningBg;
+    }
+  };
+
+  const [backgroundImage, setBackgroundImage] = useState(getInitialBackground);
 
   useEffect(() => {
     const updateBackground = () => {
@@ -15,6 +26,7 @@ export const useTimeBasedBackground = () => {
       } else if (hour >= 12 && hour < 18) {
         setBackgroundImage(afternoonBg);
       } else {
+        // Evening: 6 PM onwards (18:00 - 4:59 AM)
         setBackgroundImage(eveningBg);
       }
     };
