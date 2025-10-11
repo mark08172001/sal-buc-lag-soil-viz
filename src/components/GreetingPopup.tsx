@@ -76,8 +76,8 @@ const GreetingPopup = () => {
 
   return (
     <div
-      className={`fixed top-4 right-4 z-50 transition-all duration-500 ${
-        show ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full"
+      className={`fixed top-20 right-4 z-40 transition-all duration-700 ease-out ${
+        show ? "opacity-100 translate-x-0" : "opacity-0 translate-x-[120%]"
       }`}
     >
       <div 

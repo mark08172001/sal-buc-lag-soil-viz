@@ -1,10 +1,28 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 const Footer = () => {
+  const location = useLocation();
   const [userName, setUserName] = useState("");
   const [loginTime, setLoginTime] = useState("");
   const [currentDateTime, setCurrentDateTime] = useState("");
+  const [slideUp, setSlideUp] = useState(false);
+
+  const getPageName = () => {
+    switch (location.pathname) {
+      case "/":
+        return "Soil Health Monitoring";
+      case "/dashboard":
+        return "Soil Health Dashboard";
+      case "/map":
+        return "Soil Health Map";
+      case "/data-entry":
+        return "Data Entry";
+      default:
+        return "Soil Health Monitoring";
+    }
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -63,15 +81,23 @@ const Footer = () => {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    setSlideUp(true);
+    const timer = setTimeout(() => setSlideUp(false), 300);
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+
   if (!userName) return null;
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-border py-3 px-6 z-40">
+    <footer className={`fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-border py-3 px-6 z-40 transition-transform duration-300 ${
+      slideUp ? "translate-y-2" : "translate-y-0"
+    }`}>
       <div className="flex flex-wrap items-center justify-between gap-4 text-sm">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-foreground">{userName}</span>
           <span className="text-muted-foreground">•</span>
-          <span className="text-muted-foreground">Soil Health Monitoring</span>
+          <span className="text-muted-foreground">{getPageName()}</span>
         </div>
         
         <div className="flex items-center gap-4 text-muted-foreground font-mono text-xs">
