@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import morningBg from "@/assets/rice-fields-bg.jpg";
 import afternoonBg from "@/assets/soil-health-bg.jpg";
-import eveningBg from "@/assets/evening-city.jpg";
+import eveningBg from "@/assets/evening-farm.jpg";
 
 export const useTimeBasedBackground = () => {
   const [backgroundImage, setBackgroundImage] = useState(morningBg);

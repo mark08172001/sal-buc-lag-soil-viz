@@ -24,10 +24,15 @@ const Index = () => {
 
   return (
     <div 
-      className="min-h-screen pb-16 bg-cover bg-center bg-fixed relative"
-      style={{ backgroundImage: `url(${backgroundImage})` }}
+      className="min-h-screen pb-16 relative"
+      style={{ 
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
     >
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm -z-10" />
       <div className="relative z-10">
         <Navigation />
         <Hero />
