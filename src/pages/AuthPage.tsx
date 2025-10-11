@@ -14,7 +14,7 @@ const AuthPage = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
-  const [signUpData, setSignUpData] = useState({ email: "", password: "", confirmPassword: "" });
+  const [signUpData, setSignUpData] = useState({ fullName: "", email: "", password: "", confirmPassword: "" });
   const [loginData, setLoginData] = useState({ email: "", password: "" });
 
   useEffect(() => {
@@ -38,6 +38,15 @@ const AuthPage = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (!signUpData.fullName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter your full name",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (signUpData.password !== signUpData.confirmPassword) {
       toast({
         title: "Error",
@@ -61,7 +70,10 @@ const AuthPage = () => {
       email: signUpData.email,
       password: signUpData.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/data-entry`
+        emailRedirectTo: `${window.location.origin}/data-entry`,
+        data: {
+          full_name: signUpData.fullName
+        }
       }
     });
 
@@ -78,7 +90,7 @@ const AuthPage = () => {
         title: "Success!",
         description: "Account created successfully. You can now log in.",
       });
-      setSignUpData({ email: "", password: "", confirmPassword: "" });
+      setSignUpData({ fullName: "", email: "", password: "", confirmPassword: "" });
     }
   };
 
@@ -99,6 +111,18 @@ const AuthPage = () => {
         description: error.message,
         variant: "destructive",
       });
+    } else {
+      // Store login time
+      const loginTime = new Date().toLocaleString('en-US', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: true
+      });
+      localStorage.setItem('loginTime', loginTime);
     }
   };
 
@@ -167,6 +191,17 @@ const AuthPage = () => {
 
             <TabsContent value="signup">
               <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="signup-name">Full Name</Label>
+                  <Input
+                    id="signup-name"
+                    type="text"
+                    placeholder="John Doe"
+                    value={signUpData.fullName}
+                    onChange={(e) => setSignUpData({ ...signUpData, fullName: e.target.value })}
+                    required
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="signup-email">Email</Label>
                   <Input
