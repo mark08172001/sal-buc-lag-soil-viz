@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
-import { Sun, Moon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import morningCity from "@/assets/morning-city.jpg";
+import afternoonCity from "@/assets/afternoon-city.jpg";
+import eveningCity from "@/assets/evening-city.jpg";
 
 const GreetingPopup = () => {
   const [show, setShow] = useState(false);
   const [greeting, setGreeting] = useState("");
   const [userName, setUserName] = useState("");
   const [currentTime, setCurrentTime] = useState("");
-  const [isNight, setIsNight] = useState(false);
+  const [backgroundImage, setBackgroundImage] = useState(morningCity);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -43,13 +45,13 @@ const GreetingPopup = () => {
       // Determine greeting based on time
       if (hour >= 5 && hour < 12) {
         setGreeting("Good morning");
-        setIsNight(false);
+        setBackgroundImage(morningCity);
       } else if (hour >= 12 && hour < 18) {
         setGreeting("Good afternoon");
-        setIsNight(false);
+        setBackgroundImage(afternoonCity);
       } else {
         setGreeting("Good evening");
-        setIsNight(true);
+        setBackgroundImage(eveningCity);
       }
     };
 
@@ -78,28 +80,23 @@ const GreetingPopup = () => {
         show ? "opacity-100 translate-x-0" : "opacity-0 translate-x-full"
       }`}
     >
-      <div className="bg-card/95 backdrop-blur-md border border-border rounded-2xl shadow-2xl p-6 min-w-[300px] max-w-[400px]">
-        <div className="flex items-start gap-4">
-          <div className="flex-shrink-0">
-            {isNight ? (
-              <div className="w-16 h-16 bg-gradient-to-b from-indigo-900 to-purple-900 rounded-xl flex items-center justify-center">
-                <Moon className="w-8 h-8 text-yellow-200" />
-              </div>
-            ) : (
-              <div className="w-16 h-16 bg-gradient-to-b from-sky-400 to-orange-300 rounded-xl flex items-center justify-center">
-                <Sun className="w-8 h-8 text-yellow-400" />
-              </div>
-            )}
-          </div>
-          
-          <div className="flex-1">
-            <h3 className="text-xl font-bold text-foreground mb-1">
-              {greeting}, {userName}!
-            </h3>
-            <p className="text-sm text-muted-foreground font-mono">
-              {currentTime}
-            </p>
-          </div>
+      <div 
+        className="relative rounded-2xl shadow-2xl min-w-[320px] max-w-[420px] h-[180px] overflow-hidden"
+        style={{
+          backgroundImage: `url(${backgroundImage})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        }}
+      >
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent" />
+        
+        <div className="relative h-full flex flex-col justify-end p-6">
+          <h3 className="text-2xl font-bold text-white mb-1 drop-shadow-lg">
+            {greeting}, {userName}!
+          </h3>
+          <p className="text-sm text-white/90 font-mono drop-shadow-md">
+            {currentTime}
+          </p>
         </div>
       </div>
     </div>

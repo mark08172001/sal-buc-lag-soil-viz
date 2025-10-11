@@ -21,14 +21,14 @@ const AuthPage = () => {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate("/data-entry");
+        navigate("/");
       }
     });
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session) {
-        navigate("/data-entry");
+        navigate("/");
       }
     });
 
@@ -70,7 +70,7 @@ const AuthPage = () => {
       email: signUpData.email,
       password: signUpData.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/data-entry`,
+        emailRedirectTo: `${window.location.origin}/`,
         data: {
           full_name: signUpData.fullName
         }
