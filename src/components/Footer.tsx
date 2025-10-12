@@ -90,8 +90,8 @@ const Footer = () => {
   if (!userName) return null;
 
   return (
-    <footer className={`fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-border py-3 px-6 z-40 transition-all duration-500 ${
-      slideUp ? "translate-y-2 opacity-0" : "translate-y-0 opacity-100"
+    <footer className={`fixed bottom-0 left-0 right-0 bg-card/95 backdrop-blur-md border-t border-border py-3 px-6 z-40 transition-transform duration-300 ${
+      slideUp ? "translate-y-2" : "translate-y-0"
     }`}>
       <div className="flex flex-wrap items-center justify-between gap-4 text-sm">
         <div className="flex items-center gap-2">

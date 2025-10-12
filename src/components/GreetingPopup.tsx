@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import morningCity from "@/assets/morning-city.jpg";
-import afternoonCity from "@/assets/afternoon-city.jpg";
-import eveningCity from "@/assets/evening-city.jpg";
+import morningFarm from "@/assets/morning-farm.jpg";
+import afternoonFarm from "@/assets/afternoon-farm.jpg";
+import eveningFarm from "@/assets/evening-farm.jpg";
 
 const GreetingPopup = () => {
   const [show, setShow] = useState(false);
   const [greeting, setGreeting] = useState("");
   const [userName, setUserName] = useState("");
   const [currentTime, setCurrentTime] = useState("");
-  const [backgroundImage, setBackgroundImage] = useState(morningCity);
+  const [backgroundImage, setBackgroundImage] = useState(morningFarm);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -45,13 +45,13 @@ const GreetingPopup = () => {
       // Determine greeting based on time
       if (hour >= 5 && hour < 12) {
         setGreeting("Good morning");
-        setBackgroundImage(morningCity);
+        setBackgroundImage(morningFarm);
       } else if (hour >= 12 && hour < 18) {
         setGreeting("Good afternoon");
-        setBackgroundImage(afternoonCity);
+        setBackgroundImage(afternoonFarm);
       } else {
         setGreeting("Good evening");
-        setBackgroundImage(eveningCity);
+        setBackgroundImage(eveningFarm);
       }
     };
 
