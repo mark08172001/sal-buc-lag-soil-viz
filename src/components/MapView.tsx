@@ -33,24 +33,20 @@ const MapView = () => {
   useEffect(() => {
     const fetchSoilData = async () => {
       try {
-        const { data: soilDataRaw, error: soilError } = await supabase
+        const { data, error } = await supabase
           .from('soil_data')
-          .select('*')
+          .select(`
+            *,
+            profiles!soil_data_user_id_fkey(full_name)
+          `)
           .order('created_at', { ascending: false });
 
-        if (soilError) throw soilError;
+        if (error) throw error;
 
-        const { data: profiles, error: profilesError } = await supabase
-          .from('profiles')
-          .select('user_id, full_name');
-
-        if (profilesError) throw profilesError;
-
-        const profileMap = new Map(profiles?.map(p => [p.user_id, p.full_name]) || []);
-
-        const mappedData = soilDataRaw?.map((item: any) => ({
+        // Map the data to include user_name
+        const mappedData = data?.map((item: any) => ({
           ...item,
-          user_name: profileMap.get(item.user_id) || 'Unknown User'
+          user_name: item.profiles?.full_name || 'Unknown User'
         })) || [];
 
         setSoilData(mappedData);
