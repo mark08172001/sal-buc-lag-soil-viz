@@ -1,17 +1,15 @@
 import { Button } from "@/components/ui/button";
 import { Leaf, Map, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useTimeBasedBackground } from "@/hooks/useTimeBasedBackground";
+import soilHealthBg from "@/assets/soil-health-bg.jpg";
 
 const Hero = () => {
-  const background = useTimeBasedBackground();
-
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-all duration-1000"
-        style={{ backgroundImage: `url(${background})` }}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: `url(${soilHealthBg})` }}
       />
       {/* Overlay for text readability */}
       <div className="absolute inset-0 bg-gradient-to-br from-background/60 via-background/50 to-background/40" />
@@ -85,8 +83,8 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* White background extension */}
-      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none" />
+      {/* Decorative elements */}
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 };
