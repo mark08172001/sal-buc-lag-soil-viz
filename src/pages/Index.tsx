@@ -4,9 +4,11 @@ import Hero from "@/components/Hero";
 import GreetingPopup from "@/components/GreetingPopup";
 import Footer from "@/components/Footer";
 import { supabase } from "@/integrations/supabase/client";
+import { useTimeBasedBackground } from "@/hooks/useTimeBasedBackground";
 
 const Index = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const backgroundImage = useTimeBasedBackground();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -21,15 +23,26 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-background pb-16">
-      <Navigation />
-      <Hero />
-      {isAuthenticated && (
-        <>
-          <GreetingPopup />
-          <Footer />
-        </>
-      )}
+    <div 
+      className="min-h-screen pb-16 relative"
+      style={{ 
+        backgroundImage: `url(${backgroundImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
+      <div className="fixed inset-0 bg-black/40 backdrop-blur-sm -z-10" />
+      <div className="relative z-10">
+        <Navigation />
+        <Hero />
+        {isAuthenticated && (
+          <>
+            <GreetingPopup />
+            <Footer />
+          </>
+        )}
+      </div>
     </div>
   );
 };

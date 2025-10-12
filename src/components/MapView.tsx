@@ -19,7 +19,6 @@ interface SoilDataPoint {
   nitrogen_level: number | null;
   phosphorus_level: number | null;
   potassium_level: number | null;
-  user_name?: string;
 }
 
 const MapView = () => {
@@ -35,21 +34,12 @@ const MapView = () => {
       try {
         const { data, error } = await supabase
           .from('soil_data')
-          .select(`
-            *,
-            profiles!soil_data_user_id_fkey(full_name)
-          `)
+          .select('*')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
 
-        // Map the data to include user_name
-        const mappedData = data?.map((item: any) => ({
-          ...item,
-          user_name: item.profiles?.full_name || 'Unknown User'
-        })) || [];
-
-        setSoilData(mappedData);
+        setSoilData(data || []);
       } catch (error) {
         console.error('Error fetching soil data:', error);
         toast({
@@ -137,11 +127,8 @@ const MapView = () => {
             <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: hsl(25 20% 15%);">
               ${point.specific_location}
             </h3>
-            <p style="margin: 0 0 8px 0; font-size: 12px; color: hsl(25 15% 45%);">
+            <p style="margin: 0 0 12px 0; font-size: 12px; color: hsl(25 15% 45%);">
               ${point.municipality}
-            </p>
-            <p style="margin: 0 0 12px 0; font-size: 11px; color: hsl(130 45% 35%); font-weight: 600;">
-              Added by: ${point.user_name || 'Unknown User'}
             </p>
             <div style="display: grid; gap: 6px; font-size: 13px;">
               <div style="display: flex; justify-content: space-between;">
