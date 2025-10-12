@@ -84,7 +84,7 @@ const Hero = () => {
       </div>
 
       {/* White background extension */}
-      <div className="absolute bottom-0 left-0 right-0 h-64 bg-background" />
+      <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none" />
     </section>
   );
 };
