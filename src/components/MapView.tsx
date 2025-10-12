@@ -9,7 +9,6 @@ import soilHealthBg from "@/assets/soil-health-bg.jpg";
 
 interface SoilDataPoint {
   id: string;
-  user_id: string | null;
   specific_location: string;
   municipality: string;
   latitude: number;
@@ -27,17 +26,7 @@ const MapView = () => {
   const map = useRef<maplibregl.Map | null>(null);
   const [soilData, setSoilData] = useState<SoilDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { toast } = useToast();
-
-  // Get current user
-  useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      setCurrentUserId(user?.id || null);
-    };
-    getCurrentUser();
-  }, []);
 
   // Fetch soil data from database
   useEffect(() => {
@@ -133,39 +122,6 @@ const MapView = () => {
           </div>
         ` : '';
 
-        const canDelete = currentUserId && point.user_id === currentUserId;
-        const deleteButton = canDelete ? `
-          <button
-            id="delete-${point.id}"
-            style="
-              margin-top: 12px;
-              width: 100%;
-              padding: 8px 12px;
-              background: hsl(0 70% 50%);
-              color: white;
-              border: none;
-              border-radius: 6px;
-              font-size: 13px;
-              font-weight: 600;
-              cursor: pointer;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              gap: 6px;
-              transition: background 0.2s;
-            "
-            onmouseover="this.style.background='hsl(0 70% 45%)'"
-            onmouseout="this.style.background='hsl(0 70% 50%)'"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 6h18"></path>
-              <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-              <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-            </svg>
-            Delete Data Point
-          </button>
-        ` : '';
-
         const popupContent = `
           <div style="font-family: system-ui; padding: 8px; min-width: 200px;">
             <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: hsl(25 20% 15%);">
@@ -189,49 +145,10 @@ const MapView = () => {
               </div>
               ${npkSection}
             </div>
-            ${deleteButton}
           </div>
         `;
 
         const popup = new maplibregl.Popup({ offset: 25 }).setHTML(popupContent);
-
-        // Add delete handler after popup opens
-        popup.on('open', () => {
-          const deleteBtn = document.getElementById(`delete-${point.id}`);
-          if (deleteBtn) {
-            deleteBtn.addEventListener('click', async () => {
-              if (confirm(`Are you sure you want to delete the data point at ${point.specific_location}?`)) {
-                try {
-                  const { error } = await supabase
-                    .from('soil_data')
-                    .delete()
-                    .eq('id', point.id);
-
-                  if (error) throw error;
-
-                  toast({
-                    title: "Success",
-                    description: "Data point deleted successfully",
-                  });
-
-                  // Remove from state and close popup
-                  setSoilData(prev => prev.filter(p => p.id !== point.id));
-                  popup.remove();
-
-                  // Refresh the page to reload the map
-                  window.location.reload();
-                } catch (error) {
-                  console.error('Error deleting data point:', error);
-                  toast({
-                    title: "Error",
-                    description: "Failed to delete data point",
-                    variant: "destructive",
-                  });
-                }
-              }
-            });
-          }
-        });
 
         new maplibregl.Marker({ element: el })
           .setLngLat([point.longitude, point.latitude])
@@ -245,7 +162,7 @@ const MapView = () => {
       map.current?.remove();
       map.current = null;
     };
-  }, [soilData, isLoading, currentUserId, toast]);
+  }, [soilData, isLoading]);
 
   return (
     <div className="relative min-h-screen">
@@ -322,10 +239,6 @@ const MapView = () => {
             <li className="flex items-start gap-2">
               <span className="text-primary">•</span>
               <span>Marker colors indicate pH levels: Green (optimal), Yellow (slightly acidic), Orange/Red (acidic), Blue (alkaline)</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-primary">•</span>
-              <span>If you added a data point, you can delete it by clicking on the marker and using the delete button</span>
             </li>
           </ul>
         </CardContent>
