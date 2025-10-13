@@ -19,6 +19,7 @@ interface SoilDataPoint {
   nitrogen_level: number | null;
   phosphorus_level: number | null;
   potassium_level: number | null;
+  user_id?: string | null;
 }
 
 const MapView = () => {
@@ -26,7 +27,36 @@ const MapView = () => {
   const map = useRef<maplibregl.Map | null>(null);
   const [soilData, setSoilData] = useState<SoilDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const { toast } = useToast();
+
+  // color helpers
+  const getColorForPh = (ph: number) => {
+    if (isNaN(ph)) return '#16A34A';
+    if (ph < 4.5) return '#EF4444';
+    if (ph < 5.5) return '#F97316';
+    if (ph < 6.5) return '#FBBF24';
+    if (ph <= 7.5) return '#10B981';
+    return '#60A5FA';
+  };
+
+  const getColorForTemperature = (t: number) => {
+    if (isNaN(t)) return '#60A5FA';
+    if (t < 20) return '#60A5FA';
+    if (t >= 20 && t <= 25) return '#10B981';
+    if (t >= 26 && t <= 30) return '#FBBF24';
+    if (t >= 31 && t <= 35) return '#F97316';
+    return '#EF4444';
+  };
+
+  const getColorForFertility = (f: number) => {
+    if (isNaN(f)) return '#FBBF24';
+    if (f < 40) return '#F87171';
+    if (f < 60) return '#FB923C';
+    if (f < 70) return '#FBBF24';
+    if (f < 85) return '#10B981';
+    return '#16A34A';
+  };
 
   // Fetch soil data from database
   useEffect(() => {
@@ -53,6 +83,10 @@ const MapView = () => {
     };
 
     fetchSoilData();
+    // get current user id
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setCurrentUserId(session?.user?.id ?? null);
+    });
   }, [toast]);
 
   // Initialize map and add markers
@@ -148,7 +182,87 @@ const MapView = () => {
           </div>
         `;
 
-        const popup = new maplibregl.Popup({ offset: 25 }).setHTML(popupContent);
+        // Build DOM popup so we can include interactive delete and colored dots
+        const popupNode = document.createElement('div');
+        popupNode.innerHTML = popupContent;
+
+        // Add colored dots beside labels
+        const phDot = document.createElement('span');
+        phDot.style.display = 'inline-block';
+        phDot.style.width = '10px';
+        phDot.style.height = '10px';
+        phDot.style.borderRadius = '50%';
+        phDot.style.background = getColorForPh(point.ph_level as number);
+        phDot.style.marginRight = '8px';
+
+        const tempDot = document.createElement('span');
+        tempDot.style.display = 'inline-block';
+        tempDot.style.width = '10px';
+        tempDot.style.height = '10px';
+        tempDot.style.borderRadius = '50%';
+        tempDot.style.background = getColorForTemperature(point.temperature as number);
+        tempDot.style.marginRight = '8px';
+
+        const fertDot = document.createElement('span');
+        fertDot.style.display = 'inline-block';
+        fertDot.style.width = '10px';
+        fertDot.style.height = '10px';
+        fertDot.style.borderRadius = '50%';
+        fertDot.style.background = getColorForFertility(point.overall_fertility as number);
+        fertDot.style.marginRight = '8px';
+
+        // Insert dots before the corresponding labels in popupNode
+        try {
+          const labels = popupNode.querySelectorAll('span');
+          // naive insertion: find the pH, Temperature, Fertility label spans by text
+          const labelNodes = Array.from(popupNode.querySelectorAll('div > div > span'));
+          labelNodes.forEach((node) => {
+            const text = node.textContent?.trim() ?? '';
+            if (text.startsWith('pH')) {
+              node.prepend(phDot.cloneNode(true));
+            } else if (text.startsWith('Temperature')) {
+              node.prepend(tempDot.cloneNode(true));
+            } else if (text.startsWith('Fertility')) {
+              node.prepend(fertDot.cloneNode(true));
+            }
+          });
+        } catch {}
+
+        // Add Delete button for owner
+        if ((point as any).user_id && currentUserId && (point as any).user_id === currentUserId) {
+          const del = document.createElement('button');
+          del.textContent = 'Delete';
+          del.style.marginTop = '8px';
+          del.style.padding = '6px 10px';
+          del.style.background = '#ef4444';
+          del.style.color = 'white';
+          del.style.border = 'none';
+          del.style.borderRadius = '6px';
+          del.style.cursor = 'pointer';
+          popupNode.appendChild(del);
+
+          del.addEventListener('click', async (ev) => {
+            ev.stopPropagation();
+            const ok = window.confirm('Delete this soil data entry? This action cannot be undone.');
+            if (!ok) return;
+            del.disabled = true;
+            del.textContent = 'Deleting...';
+            try {
+              const { error } = await supabase.from('soil_data').delete().eq('id', point.id);
+              if (error) throw error;
+              setSoilData((prev) => prev.filter((p) => p.id !== point.id));
+              toast({ title: 'Deleted', description: 'Soil data entry deleted' });
+              if (map.current) { map.current.remove(); map.current = null; }
+            } catch (err) {
+              console.error(err);
+              toast({ title: 'Error', description: 'Failed to delete', variant: 'destructive' });
+              del.disabled = false;
+              del.textContent = 'Delete';
+            }
+          });
+        }
+
+        const popup = new maplibregl.Popup({ offset: 25 }).setDOMContent(popupNode);
 
         new maplibregl.Marker({ element: el })
           .setLngLat([point.longitude, point.latitude])
