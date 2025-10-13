@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import morningCity from "@/assets/morning-city.jpg";
-import afternoonCity from "@/assets/afternoon-city.jpg";
-import eveningCity from "@/assets/evening-city.jpg";
+import morningCity from "@/assets/morning.png";
+import afternoonCity from "@/assets/afternoon.png";
+import eveningCity from "@/assets/night.png";
 
 const GreetingPopup = () => {
   const [show, setShow] = useState(false);
