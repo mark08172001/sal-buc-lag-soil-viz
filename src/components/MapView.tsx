@@ -881,5 +881,4 @@ const MapView = () => {
     </div>
   );
 };
-
 export default MapView;
