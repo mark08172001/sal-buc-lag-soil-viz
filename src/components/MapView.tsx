@@ -347,7 +347,6 @@ const MapView = () => {
                 if (v > 100) fertInput.value = '100';
               });
 
-              
               const fertLabel = document.createElement('label');
               fertLabel.textContent = 'Fertility (%)';
               fertLabel.style.fontSize = '11px';
