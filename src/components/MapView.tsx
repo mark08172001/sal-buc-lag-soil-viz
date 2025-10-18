@@ -279,14 +279,14 @@ const MapView = () => {
               phInput.style.display = 'block';
               phInput.style.boxSizing = 'border-box';
               // restrict pH input to 0-14
-              phInput.min = '0';
+              phInput.min = '0'; // Ensure min is set to 0
               phInput.max = '14';
-              phInput.addEventListener('input', () => {
-                if (phInput.value === '') return;
-                const v = parseFloat(phInput.value);
-                if (Number.isNaN(v)) return;
-                if (v < 0) phInput.value = '0';
-                if (v > 14) phInput.value = '14';
+              phInput.addEventListener('input', () => { // Add event listener for input
+                if (phInput.value === '') return; // Return if input is empty
+                const v = parseFloat(phInput.value); // Parse input value as float
+                if (Number.isNaN(v)) return; // Return if value is NaN
+                if (v < 0) phInput.value = '0'; // Clamp negative values to 0
+                if (v > 14) phInput.value = '14'; // Clamp values above 14
               });
 
               const phLabel = document.createElement('label');
@@ -336,15 +336,15 @@ const MapView = () => {
               fertInput.style.lineHeight = '1';
               fertInput.style.display = 'block';
               fertInput.style.boxSizing = 'border-box';
-              // limit fertility to 0-100
-              fertInput.min = '0';
-              fertInput.max = '100';
-              fertInput.addEventListener('input', () => {
-                if (fertInput.value === '') return;
-                const v = parseFloat(fertInput.value);
-                if (Number.isNaN(v)) return;
-                if (v < 0) fertInput.value = '0';
-                if (v > 100) fertInput.value = '100';
+              // limit fertility to 0-100 (no negatives)
+              fertInput.min = '0'; // Ensure min is set to 0
+              fertInput.max = '100'; // Ensure max is set to 100
+              fertInput.addEventListener('input', () => { // Add event listener for input
+                if (fertInput.value === '') return; // Return if input is empty
+                const v = parseFloat(fertInput.value); // Parse input value as float
+                if (Number.isNaN(v)) return; // Return if value is NaN
+                if (v < 0) fertInput.value = '0'; // Clamp negative values to 0
+                if (v > 100) fertInput.value = '100'; // Clamp values above 100
               });
 
               const fertLabel = document.createElement('label');
@@ -354,11 +354,11 @@ const MapView = () => {
               fertLabel.style.display = 'block';
 
               // NPK inputs
-              const nInput = document.createElement('input');
+              const nInput = document.createElement('input'); // Create nitrogen input
               nInput.type = 'number';
               nInput.step = '0.01';
-              nInput.min = '0';
-              nInput.max = '1';
+              nInput.min = '0'; // Ensure min is set to 0
+              nInput.max = '1'; // Ensure max is set to 1
               nInput.value = p.nitrogen_level !== null ? String(p.nitrogen_level) : '';
               nInput.style.padding = '5px';
               nInput.style.border = '2px solid #000';
@@ -373,11 +373,11 @@ const MapView = () => {
                 if (v > 1) nInput.value = '1';
               });
 
-              const pInput = document.createElement('input');
+              const pInput = document.createElement('input'); // Create phosphorus input
               pInput.type = 'number';
               pInput.step = '0.01';
-              pInput.min = '0';
-              pInput.max = '1';
+              pInput.min = '0'; // Ensure min is set to 0
+              pInput.max = '1'; // Ensure max is set to 1
               pInput.value = p.phosphorus_level !== null ? String(p.phosphorus_level) : '';
               pInput.style.padding = '5px';
               pInput.style.border = '2px solid #000';
@@ -391,11 +391,11 @@ const MapView = () => {
                 if (v > 1) pInput.value = '1';
               });
 
-              const kInput = document.createElement('input');
+              const kInput = document.createElement('input'); // Create potassium input
               kInput.type = 'number';
               kInput.step = '0.01';
-              kInput.min = '0';
-              kInput.max = '1';
+              kInput.min = '0'; // Ensure min is set to 0
+              kInput.max = '1'; // Ensure max is set to 1
               kInput.value = p.potassium_level !== null ? String(p.potassium_level) : '';
               kInput.style.padding = '5px';
               kInput.style.border = '2px solid #000';

@@ -91,21 +91,25 @@ const DataInput = () => {
     setFormData({ ...formData, location, coordinates });
   };
 
+  const clamp = (n: number, min: number, max: number) => Math.min(Math.max(n, min), max);
+
   const handleTemperatureChange = (value: string) => {
+    // allow negative temperatures but cap maximum at 100
     const temp = parseFloat(value);
-    
+
     if (!isNaN(temp) && value !== "") {
-      const { pH, fertility } = calculateSoilParameters(temp);
+      const capped = clamp(temp, -Infinity, 100);
+      const { pH, fertility } = calculateSoilParameters(capped);
       setFormData({ 
         ...formData, 
-        temperature: value,
+        temperature: String(capped),
         pH,
         fertility
       });
-      
+
       toast({
         title: "Auto-calculated",
-        description: `pH: ${pH}, Fertility: ${fertility}% (based on temperature ${temp}°C)`,
+        description: `pH: ${pH}, Fertility: ${fertility}% (based on temperature ${capped}°C)`,
       });
     } else {
       setFormData({ ...formData, temperature: value });
@@ -132,6 +136,46 @@ const DataInput = () => {
         variant: "destructive",
       });
       navigate("/auth");
+      return;
+    }
+
+    // Validate numeric ranges before submitting
+    const tempVal = parseFloat(formData.temperature as string);
+    const pHVal = parseFloat(formData.pH as string);
+    const fertVal = parseFloat(formData.fertility as string);
+    const nVal = formData.nitrogen ? parseFloat(formData.nitrogen) : null;
+    const pVal = formData.phosphorus ? parseFloat(formData.phosphorus) : null;
+    const kVal = formData.potassium ? parseFloat(formData.potassium) : null;
+
+    if (isNaN(tempVal)) {
+      toast({ title: "Validation Error", description: "Temperature is required and must be a number", variant: "destructive" });
+      return;
+    }
+
+    if (tempVal > 100) {
+      toast({ title: "Validation Error", description: "Temperature must not exceed 100°C", variant: "destructive" });
+      return;
+    }
+
+    if (isNaN(pHVal) || pHVal < 0 || pHVal > 14) {
+      toast({ title: "Validation Error", description: "pH level must be between 0 and 14", variant: "destructive" });
+      return;
+    }
+
+    if (isNaN(fertVal) || fertVal < 0 || fertVal > 100) {
+      toast({ title: "Validation Error", description: "Fertility must be between 0 and 100", variant: "destructive" });
+      return;
+    }
+
+    const npkInvalid = [
+      [nVal, 'Nitrogen'],
+      [pVal, 'Phosphorus'],
+      [kVal, 'Potassium'],
+    ].find(([val]) => val !== null && (isNaN(val as number) || (val as number) < 0 || (val as number) > 1));
+
+    if (npkInvalid) {
+      // @ts-ignore
+      toast({ title: "Validation Error", description: `${npkInvalid[1]} must be a number between 0 and 1`, variant: "destructive" });
       return;
     }
 
@@ -274,14 +318,15 @@ const DataInput = () => {
                     Temperature (°C) <span className="text-destructive">*</span>
                     <Info className="w-4 h-4 text-muted-foreground" />
                   </Label>
-                  <Input
-                    id="temperature"
-                    type="number"
-                    step="0.1"
-                    placeholder="28.5"
-                    value={formData.temperature}
-                    onChange={(e) => handleTemperatureChange(e.target.value)}
-                  />
+                    <Input
+                      id="temperature"
+                      type="number"
+                      step="0.1"
+                      placeholder="28.5"
+                      value={formData.temperature}
+                      onChange={(e) => handleTemperatureChange(e.target.value)}
+                      max={100}
+                    />
                   <p className="text-xs text-muted-foreground">
                     pH and fertility will be auto-calculated based on temperature
                   </p>
@@ -294,11 +339,20 @@ const DataInput = () => {
                       id="pH"
                       type="number"
                       step="0.1"
-                      min="0"
-                      max="14"
+                      min={0}
+                      max={14}
                       placeholder="6.5"
                       value={formData.pH}
-                      onChange={(e) => setFormData({ ...formData, pH: e.target.value })}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        const n = parseFloat(v);
+                        if (v === "") return setFormData({ ...formData, pH: v });
+                        if (!isNaN(n)) {
+                          setFormData({ ...formData, pH: String(clamp(n, 0, 14)) });
+                        } else {
+                          setFormData({ ...formData, pH: v });
+                        }
+                      }}
                       className="bg-muted/50"
                     />
                     <p className="text-xs text-muted-foreground">Range: 0-14 (editable)</p>
@@ -309,11 +363,20 @@ const DataInput = () => {
                     <Input
                       id="fertility"
                       type="number"
-                      min="0"
-                      max="100"
+                      min={0}
+                      max={100}
                       placeholder="75"
                       value={formData.fertility}
-                      onChange={(e) => setFormData({ ...formData, fertility: e.target.value })}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        const n = parseFloat(v);
+                        if (v === "") return setFormData({ ...formData, fertility: v });
+                        if (!isNaN(n)) {
+                          setFormData({ ...formData, fertility: String(clamp(n, 0, 100)) });
+                        } else {
+                          setFormData({ ...formData, fertility: v });
+                        }
+                      }}
                       className="bg-muted/50"
                     />
                     <p className="text-xs text-muted-foreground">Range: 0-100% (editable)</p>
@@ -331,9 +394,17 @@ const DataInput = () => {
                     id="nitrogen"
                     type="number"
                     step="0.01"
+                    min={0}
+                    max={1}
                     placeholder="0.25"
                     value={formData.nitrogen}
-                    onChange={(e) => setFormData({ ...formData, nitrogen: e.target.value })}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      const n = parseFloat(v);
+                      if (v === "") return setFormData({ ...formData, nitrogen: v });
+                      if (!isNaN(n)) setFormData({ ...formData, nitrogen: String(clamp(n, 0, 1)) });
+                      else setFormData({ ...formData, nitrogen: v });
+                    }}
                   />
                 </div>
 
@@ -343,9 +414,17 @@ const DataInput = () => {
                     id="phosphorus"
                     type="number"
                     step="0.01"
+                    min={0}
+                    max={1}
                     placeholder="0.15"
                     value={formData.phosphorus}
-                    onChange={(e) => setFormData({ ...formData, phosphorus: e.target.value })}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      const n = parseFloat(v);
+                      if (v === "") return setFormData({ ...formData, phosphorus: v });
+                      if (!isNaN(n)) setFormData({ ...formData, phosphorus: String(clamp(n, 0, 1)) });
+                      else setFormData({ ...formData, phosphorus: v });
+                    }}
                   />
                 </div>
 
@@ -355,9 +434,17 @@ const DataInput = () => {
                     id="potassium"
                     type="number"
                     step="0.01"
+                    min={0}
+                    max={1}
                     placeholder="0.20"
                     value={formData.potassium}
-                    onChange={(e) => setFormData({ ...formData, potassium: e.target.value })}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      const n = parseFloat(v);
+                      if (v === "") return setFormData({ ...formData, potassium: v });
+                      if (!isNaN(n)) setFormData({ ...formData, potassium: String(clamp(n, 0, 1)) });
+                      else setFormData({ ...formData, potassium: v });
+                    }}
                   />
                 </div>
               </div>
