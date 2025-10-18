@@ -227,6 +227,7 @@ const MapView = () => {
             });
           } catch {}
 
+          
           // Add action buttons for owner: Edit & Delete
           if (p.user_id && currentUserId && p.user_id === currentUserId) {
             const actions = document.createElement('div');
