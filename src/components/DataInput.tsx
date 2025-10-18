@@ -588,5 +588,4 @@ const DataInput = () => {
     </div>
   );
 };
-
 export default DataInput;
