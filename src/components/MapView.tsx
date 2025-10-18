@@ -102,6 +102,23 @@ const MapView = () => {
       zoom: 10.5,
     });
 
+    // Inject a small style to slightly enlarge the popup close '×' button for our popups
+    if (typeof document !== 'undefined' && !document.getElementById('sb-popup-close-style')) {
+      const style = document.createElement('style');
+      style.id = 'sb-popup-close-style';
+      style.innerHTML = `
+        /* larger close button for map popups created by this component */
+        .sb-popup .maplibregl-popup-close-button {
+          font-size: 18px !important;
+          width: 30px !important;
+          height: 30px !important;
+          line-height: 30px !important;
+          opacity: 0.95;
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
     // Add navigation controls
     map.current.addControl(new maplibregl.NavigationControl(), "top-right");
 
@@ -671,7 +688,7 @@ const MapView = () => {
             });
           }
 
-          const popup = new maplibregl.Popup({ offset: 25 }).setDOMContent(popupNode);
+          const popup = new maplibregl.Popup({ offset: 25, className: 'sb-popup' }).setDOMContent(popupNode);
 
           const marker = new maplibregl.Marker({ element: el })
             .setLngLat([p.longitude, p.latitude])
