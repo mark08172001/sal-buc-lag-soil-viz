@@ -278,6 +278,16 @@ const MapView = () => {
               phInput.style.lineHeight = '1';
               phInput.style.display = 'block';
               phInput.style.boxSizing = 'border-box';
+              // restrict pH input to 0-14
+              phInput.min = '0';
+              phInput.max = '14';
+              phInput.addEventListener('input', () => {
+                if (phInput.value === '') return;
+                const v = parseFloat(phInput.value);
+                if (Number.isNaN(v)) return;
+                if (v < 0) phInput.value = '0';
+                if (v > 14) phInput.value = '14';
+              });
 
               const phLabel = document.createElement('label');
               phLabel.textContent = 'pH Level';
@@ -298,6 +308,14 @@ const MapView = () => {
               tempInput.style.lineHeight = '1';
               tempInput.style.display = 'block';
               tempInput.style.boxSizing = 'border-box';
+              // limit temperature input to max 100
+              tempInput.max = '100';
+              tempInput.addEventListener('input', () => {
+                if (tempInput.value === '') return;
+                const v = parseFloat(tempInput.value);
+                if (Number.isNaN(v)) return;
+                if (v > 100) tempInput.value = '100';
+              });
 
               const tempLabel = document.createElement('label');
               tempLabel.textContent = 'Temperature';
@@ -318,6 +336,16 @@ const MapView = () => {
               fertInput.style.lineHeight = '1';
               fertInput.style.display = 'block';
               fertInput.style.boxSizing = 'border-box';
+              // limit fertility to 0-100
+              fertInput.min = '0';
+              fertInput.max = '100';
+              fertInput.addEventListener('input', () => {
+                if (fertInput.value === '') return;
+                const v = parseFloat(fertInput.value);
+                if (Number.isNaN(v)) return;
+                if (v < 0) fertInput.value = '0';
+                if (v > 100) fertInput.value = '100';
+              });
 
               const fertLabel = document.createElement('label');
               fertLabel.textContent = 'Fertility (%)';
@@ -329,29 +357,57 @@ const MapView = () => {
               const nInput = document.createElement('input');
               nInput.type = 'number';
               nInput.step = '0.01';
+              nInput.min = '0';
+              nInput.max = '1';
               nInput.value = p.nitrogen_level !== null ? String(p.nitrogen_level) : '';
               nInput.style.padding = '5px';
               nInput.style.border = '2px solid #000';
               nInput.style.borderRadius = '6px';
               nInput.style.fontSize = '12px';
+              // clamp user input to [0,1]
+              nInput.addEventListener('input', () => {
+                if (nInput.value === '') return;
+                const v = parseFloat(nInput.value);
+                if (Number.isNaN(v)) return;
+                if (v < 0) nInput.value = '0';
+                if (v > 1) nInput.value = '1';
+              });
 
               const pInput = document.createElement('input');
               pInput.type = 'number';
               pInput.step = '0.01';
+              pInput.min = '0';
+              pInput.max = '1';
               pInput.value = p.phosphorus_level !== null ? String(p.phosphorus_level) : '';
               pInput.style.padding = '5px';
               pInput.style.border = '2px solid #000';
               pInput.style.borderRadius = '6px';
               pInput.style.fontSize = '12px';
+              pInput.addEventListener('input', () => {
+                if (pInput.value === '') return;
+                const v = parseFloat(pInput.value);
+                if (Number.isNaN(v)) return;
+                if (v < 0) pInput.value = '0';
+                if (v > 1) pInput.value = '1';
+              });
 
               const kInput = document.createElement('input');
               kInput.type = 'number';
               kInput.step = '0.01';
+              kInput.min = '0';
+              kInput.max = '1';
               kInput.value = p.potassium_level !== null ? String(p.potassium_level) : '';
               kInput.style.padding = '5px';
               kInput.style.border = '2px solid #000';
               kInput.style.borderRadius = '6px';
               kInput.style.fontSize = '12px';
+              kInput.addEventListener('input', () => {
+                if (kInput.value === '') return;
+                const v = parseFloat(kInput.value);
+                if (Number.isNaN(v)) return;
+                if (v < 0) kInput.value = '0';
+                if (v > 1) kInput.value = '1';
+              });
 
               // helper to normalize input sizing — no dropdown decoration
               const wrapAsDropdown = (inputEl: HTMLInputElement) => {
@@ -470,6 +526,39 @@ const MapView = () => {
                 // simple validation
                 if (Number.isNaN(newPh) || Number.isNaN(newTemp) || Number.isNaN(newFert)) {
                   toast({ title: 'Invalid', description: 'Please enter valid numeric values', variant: 'destructive' });
+                  saveBtn.disabled = false;
+                  saveBtn.textContent = 'Save';
+                  return;
+                }
+
+                // validate pH range 0-14
+                if (newPh < 0 || newPh > 14) {
+                  toast({ title: 'Invalid pH', description: 'pH must be between 0 and 14', variant: 'destructive' });
+                  saveBtn.disabled = false;
+                  saveBtn.textContent = 'Save';
+                  return;
+                }
+
+                // validate temperature (<=100)
+                if (newTemp > 100) {
+                  toast({ title: 'Invalid Temperature', description: 'Temperature must be 100°C or less', variant: 'destructive' });
+                  saveBtn.disabled = false;
+                  saveBtn.textContent = 'Save';
+                  return;
+                }
+
+                // validate fertility range 0-100
+                if (newFert < 0 || newFert > 100) {
+                  toast({ title: 'Invalid Fertility', description: 'Fertility must be between 0 and 100', variant: 'destructive' });
+                  saveBtn.disabled = false;
+                  saveBtn.textContent = 'Save';
+                  return;
+                }
+
+                // validate NPK ranges (0-1)
+                const invalidNPK = [newN, newP, newK].some((v) => v !== null && (Number.isNaN(v) || v < 0 || v > 1));
+                if (invalidNPK) {
+                  toast({ title: 'Invalid NPK', description: 'N, P, and K must be between 0 and 1', variant: 'destructive' });
                   saveBtn.disabled = false;
                   saveBtn.textContent = 'Save';
                   return;
