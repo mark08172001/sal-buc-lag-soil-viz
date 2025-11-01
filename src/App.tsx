@@ -30,15 +30,17 @@ const AppRoutes = () => {
   return (
     <>
       {isLoading && <LoadingScreen />}
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/map" element={<MapPage />} />
-        <Route path="/data-entry" element={<DataEntryPage />} />
-        <Route path="/auth" element={<AuthPage />} />
-        {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
+      <div className={isLoading ? "pointer-events-none" : ""}>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/map" element={<MapPage />} />
+          <Route path="/data-entry" element={<DataEntryPage />} />
+          <Route path="/auth" element={<AuthPage />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </div>
     </>
   );
 };

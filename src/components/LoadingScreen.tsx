@@ -2,7 +2,7 @@ import { Leaf } from "lucide-react";
 
 const LoadingScreen = () => {
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-md bg-transparent pointer-events-none">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center backdrop-blur-md bg-transparent">
       <div className="relative">
         {/* Animated leaf with forming effect */}
         <div className="relative w-24 h-24">
