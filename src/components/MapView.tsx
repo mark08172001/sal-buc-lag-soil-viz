@@ -2,9 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MapPin } from "lucide-react";
+import { MapPin, Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import * as XLSX from 'xlsx';
 import soilHealthBg from "@/assets/soil-health-bg.jpg";
 
 interface SoilDataPoint {
@@ -57,6 +65,99 @@ const MapView = () => {
     if (f < 70) return '#FBBF24';
     if (f < 85) return '#10B981';
     return '#16A34A';
+  };
+
+  // Export functions
+  const exportToCSV = () => {
+    if (soilData.length === 0) {
+      toast({
+        title: "No Data",
+        description: "No soil data available to export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const headers = [
+      "Location",
+      "Municipality",
+      "Latitude",
+      "Longitude",
+      "pH Level",
+      "Temperature (°C)",
+      "Fertility (%)",
+      "Nitrogen (%)",
+      "Phosphorus (%)",
+      "Potassium (%)",
+    ];
+
+    const rows = soilData.map((point) => [
+      point.specific_location,
+      point.municipality,
+      point.latitude,
+      point.longitude,
+      point.ph_level,
+      point.temperature,
+      point.overall_fertility,
+      point.nitrogen_level !== null ? (point.nitrogen_level * 100).toFixed(2) : "N/A",
+      point.phosphorus_level !== null ? (point.phosphorus_level * 100).toFixed(2) : "N/A",
+      point.potassium_level !== null ? (point.potassium_level * 100).toFixed(2) : "N/A",
+    ]);
+
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `soil_data_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "Export Successful",
+      description: "Soil data exported as CSV",
+    });
+  };
+
+  const exportToExcel = () => {
+    if (soilData.length === 0) {
+      toast({
+        title: "No Data",
+        description: "No soil data available to export",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const exportData = soilData.map((point) => ({
+      Location: point.specific_location,
+      Municipality: point.municipality,
+      Latitude: point.latitude,
+      Longitude: point.longitude,
+      "pH Level": point.ph_level,
+      "Temperature (°C)": point.temperature,
+      "Fertility (%)": point.overall_fertility,
+      "Nitrogen (%)": point.nitrogen_level !== null ? (point.nitrogen_level * 100).toFixed(2) : "N/A",
+      "Phosphorus (%)": point.phosphorus_level !== null ? (point.phosphorus_level * 100).toFixed(2) : "N/A",
+      "Potassium (%)": point.potassium_level !== null ? (point.potassium_level * 100).toFixed(2) : "N/A",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(exportData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Soil Data");
+
+    XLSX.writeFile(workbook, `soil_data_${new Date().toISOString().split('T')[0]}.xlsx`);
+
+    toast({
+      title: "Export Successful",
+      description: "Soil data exported as Excel file",
+    });
   };
 
   // Fetch soil data from database
@@ -722,12 +823,30 @@ const MapView = () => {
       <div className="fixed inset-0 bg-gradient-to-br from-background/60 via-background/50 to-background/40 -z-10" />
       
       <div className="container mx-auto p-4 md:p-8 space-y-8 relative z-10">
-      <div>
-        <h1 className="text-4xl font-bold mb-2">Soil Health Map</h1>
-        <p className="text-muted-foreground">
-          Interactive GIS visualization of soil data points across Abra municipalities
-          {!isLoading && <span className="ml-2">({soilData.length} data points)</span>}
-        </p>
+      <div className="flex justify-between items-start gap-4">
+        <div>
+          <h1 className="text-4xl font-bold mb-2">Soil Health Map</h1>
+          <p className="text-muted-foreground">
+            Interactive GIS visualization of soil data points across Abra municipalities
+            {!isLoading && <span className="ml-2">({soilData.length} data points)</span>}
+          </p>
+        </div>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="default" className="gap-2">
+              <Download className="w-4 h-4" />
+              Export
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="bg-background">
+            <DropdownMenuItem onClick={exportToCSV} className="cursor-pointer">
+              Export as CSV
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={exportToExcel} className="cursor-pointer">
+              Export as Excel
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <Card className="bg-card/80 backdrop-blur-sm">
