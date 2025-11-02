@@ -823,34 +823,16 @@ const MapView = () => {
       <div className="fixed inset-0 bg-gradient-to-br from-background/60 via-background/50 to-background/40 -z-10" />
       
       <div className="container mx-auto p-4 md:p-8 space-y-8 relative z-10">
-      <div className="flex justify-between items-start gap-4">
-        <div>
-          <h1 className="text-4xl font-bold mb-2">Soil Health Map</h1>
-          <p className="text-muted-foreground">
-            Interactive GIS visualization of soil data points across Abra municipalities
-            {!isLoading && <span className="ml-2">({soilData.length} data points)</span>}
-          </p>
-        </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="default" className="gap-2">
-              <Download className="w-4 h-4" />
-              Export
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-background z-[1000]">
-            <DropdownMenuItem onClick={exportToCSV} className="cursor-pointer">
-              Export as CSV
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={exportToExcel} className="cursor-pointer">
-              Export as Excel
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div>
+        <h1 className="text-4xl font-bold mb-2">Soil Health Map</h1>
+        <p className="text-muted-foreground">
+          Interactive GIS visualization of soil data points across Abra municipalities
+          {!isLoading && <span className="ml-2">({soilData.length} data points)</span>}
+        </p>
       </div>
 
       <Card className="bg-card/80 backdrop-blur-sm">
-        <CardContent className="p-0">
+        <CardContent className="p-0 relative">
           {isLoading ? (
             <div className="w-full h-[600px] rounded-lg flex items-center justify-center">
               <div className="text-center">
@@ -866,11 +848,32 @@ const MapView = () => {
               </div>
             </div>
           ) : (
-            <div
-              ref={mapContainer}
-              className="w-full h-[600px] rounded-lg"
-              style={{ minHeight: "600px" }}
-            />
+            <>
+              <div
+                ref={mapContainer}
+                className="w-full h-[600px] rounded-lg"
+                style={{ minHeight: "600px" }}
+              />
+              {/* Export button overlay */}
+              <div className="absolute top-[140px] right-4 z-10">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="default" size="sm" className="gap-2 shadow-lg">
+                      <Download className="w-4 h-4" />
+                      Export
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-background z-[1000]">
+                    <DropdownMenuItem onClick={exportToCSV} className="cursor-pointer">
+                      Export as CSV
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={exportToExcel} className="cursor-pointer">
+                      Export as Excel
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
